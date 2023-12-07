@@ -39,12 +39,8 @@ class UncertainObject(object):
         :param delta: (num_dimensions,) array of deltas
         :return: Boolean
         """
-        for i in np.random.permutation(self.num_dimensions):
-            # check if two mbr overlap in dimension I after expanding by delta
-            if (self.mbr.min[i] - delta[i] > other.mbr.max[i] + delta[i] or
-                    self.mbr.max[i] + delta[i] < other.mbr.min[i] - delta[i]):
-                return False
-        return True
+
+        return np.all(self.mbr.min < other.mbr.max + 2 * delta) and np.all(self.mbr.max > other.mbr.min - 2 * delta)
 
     def iej(self, other, eps: float) -> bool:
         """

@@ -1,3 +1,5 @@
+from functools import wraps
+from time import time
 from typing import List, Tuple
 
 import numpy as np
@@ -21,3 +23,16 @@ def generator(num_samples: int, triangular: GENERATOR_TYPE, gaussian: GENERATOR_
     all_samples = triangular_samples + gaussian_samples + uniform_samples
     all_samples.sort(key=lambda x: x[0])
     return np.stack([x[1] for x in all_samples]).T
+
+
+def timing(f):
+    @wraps(f)
+    def wrap(*args, **kw):
+        ts = time()
+        result = f(*args, **kw)
+        te = time()
+        print('func:%r args:[%r, %r] took: %2.4f sec' % \
+              (f.__name__, args, kw, te - ts))
+        return result
+
+    return wrap
