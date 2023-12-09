@@ -1,5 +1,6 @@
 import numpy as np
 from munch import Munch
+from typing import Optional
 
 
 class UncertainObject(object):
@@ -42,15 +43,17 @@ class UncertainObject(object):
 
         return np.all(self.mbr.min < other.mbr.max + 2 * delta) and np.all(self.mbr.max > other.mbr.min - 2 * delta)
 
-    def iej(self, other, eps: float) -> bool:
+    def iej(self, other, eps: float, delta: Optional[np.ndarray] = None) -> bool:
         """
         :param other: UncertainObject
         :param eps: Epsilon
+        :param delta: (num_dimensions,) array of deltas
         :return: Boolean
         """
         assert self.num_dimensions == other.num_dimensions
 
-        delta = 1.0 / (2 * np.sqrt(self.num_dimensions)) * eps * np.ones(self.num_dimensions)
+        if delta is None:
+            delta = 1.0 / (2.0 * np.sqrt(self.num_dimensions)) * eps * np.ones(self.num_dimensions)
 
         return self._check_overlapping(other, delta)
 
@@ -63,6 +66,5 @@ class UncertainObject(object):
         assert self.num_dimensions == other.num_dimensions
 
         std = self.mbr.std + other.mbr.std
-        delta = 1.0 / (2.0 * np.sqrt(np.sum(np.square(std)))) * eps * std
-
+        delta = 1.0 / (2.0 * np.linalg.norm(std, ord=1)) * eps * std
         return self._check_overlapping(other, delta)
