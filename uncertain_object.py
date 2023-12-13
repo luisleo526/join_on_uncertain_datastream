@@ -1,6 +1,7 @@
+from typing import Optional
+
 import numpy as np
 from munch import Munch
-from typing import Optional
 
 
 class UncertainObject(object):
@@ -22,32 +23,56 @@ class UncertainObject(object):
                      max=np.max(self.samples, axis=0),
                      std=np.std(self.samples, axis=0))
 
-    def ej(self, other, eps: float) -> bool:
+    def ej(self, other, eps: float, beta: float = 0.0) -> bool:
         """
         :param other: UncertainObject
         :param eps: Epsilon
+        :param beta: Probability threshold
         :return: Boolean
         """
         assert self.num_dimensions == other.num_dimensions
 
         # Compute the distance between each pair of samples
         distances = np.linalg.norm(self.samples[:, None, :] - other.samples[None, :, :], axis=-1)
-        return np.any(distances < eps)
 
-    def _check_overlapping(self, other, delta: np.ndarray) -> bool:
+        return distances[distances < eps].size > beta * distances.size
+
+    def _check_overlapping(self, other, delta: np.ndarray, beta: float = 0.0) -> bool:
         """
         :param other: UncertainObject
         :param delta: (num_dimensions,) array of deltas
+        :param beta: Probability threshold
         :return: Boolean
         """
 
-        return np.all(self.mbr.min < other.mbr.max + 2 * delta) and np.all(self.mbr.max > other.mbr.min - 2 * delta)
+        assert np.all(delta > 0.0)
 
-    def iej(self, other, eps: float, delta: Optional[np.ndarray] = None) -> bool:
+        area = np.where(self.mbr.max > other.mbr.max,
+                        np.where(self.mbr.min > other.mbr.min,
+                                 other.mbr.max - self.mbr.min + 2.0 * delta,
+                                 other.mbr.max - other.mbr.min + 2.0 * delta
+                                 ),
+                        np.where(self.mbr.min > other.mbr.min,
+                                 self.mbr.max - self.mbr.min + 2.0 * delta,
+                                 self.mbr.max - other.mbr.min + 2.0 * delta
+                                 )
+                        )
+
+        overlapped = np.all(area > 0.0)
+
+        prob = (np.prod(area) ** 2 / np.prod(self.mbr.max - self.mbr.min + 2.0 * delta) /
+                np.prod(other.mbr.max - other.mbr.min + 2.0 * delta))
+
+        assert prob <= 1.0
+
+        return overlapped and prob > beta
+
+    def iej(self, other, eps: float, delta: Optional[np.ndarray] = None, beta: float = 0.0) -> bool:
         """
         :param other: UncertainObject
         :param eps: Epsilon
         :param delta: (num_dimensions,) array of deltas
+        :param beta: Probability threshold
         :return: Boolean
         """
         assert self.num_dimensions == other.num_dimensions
@@ -55,16 +80,17 @@ class UncertainObject(object):
         if delta is None:
             delta = 1.0 / (2.0 * np.sqrt(self.num_dimensions)) * eps * np.ones(self.num_dimensions)
 
-        return self._check_overlapping(other, delta)
+        return self._check_overlapping(other, delta, beta)
 
-    def o_iej(self, other, eps: float) -> bool:
+    def o_iej(self, other, eps: float, beta: float = 0.0) -> bool:
         """
         :param other: UncertainObject
         :param eps: Epsilon
+        :param beta: Probability threshold
         :return: Boolean
         """
         assert self.num_dimensions == other.num_dimensions
 
         std = self.mbr.std + other.mbr.std
         delta = 1.0 / (2.0 * np.linalg.norm(std, ord=1)) * eps * std
-        return self._check_overlapping(other, delta)
+        return self._check_overlapping(other, delta, beta)

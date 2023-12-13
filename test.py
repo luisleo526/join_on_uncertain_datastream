@@ -65,9 +65,9 @@ def accuracy(spec1: Dict[str, GENERATOR_TYPE],
     return t
 
 
-dx = 0.5
+dx = 100.0
 dim = 2
 alpha = 1.0
-distribution_spec1 = dict(triangular=[], gaussian=[], uniform=[(x, 0, 1.0) for x in range(dim)])
-distribution_spec2 = dict(triangular=[], gaussian=[], uniform=[(x, 0, 1.0) for x in range(dim)])
-accuracy_iej_weights(distribution_spec1, distribution_spec2, 100, 0.001)
+distribution_spec1 = dict(triangular=[], gaussian=[], uniform=[(x, 0.0, 1000.0) for x in range(dim)])
+distribution_spec2 = dict(triangular=[], gaussian=[], uniform=[(x, -dx, 1000.0 + dx) for x in range(dim)])
+accuracy_iej_weights(distribution_spec1, distribution_spec2, 100, 10)
