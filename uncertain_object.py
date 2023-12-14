@@ -58,14 +58,14 @@ class UncertainObject(object):
                                  )
                         )
 
-        overlapped = np.all(area > 0.0)
+        area = np.where(area > 0.0, area, 0.0)
 
         prob = (np.prod(area) ** 2 / np.prod(self.mbr.max - self.mbr.min + 2.0 * delta) /
                 np.prod(other.mbr.max - other.mbr.min + 2.0 * delta))
 
         assert prob <= 1.0
 
-        return overlapped and prob > beta
+        return prob > beta
 
     def iej(self, other, eps: float, delta: Optional[np.ndarray] = None, beta: float = 0.0) -> bool:
         """
