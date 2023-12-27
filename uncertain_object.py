@@ -125,5 +125,6 @@ class UncertainObject(object):
 
         # std = self.mbr.std + other.mbr.std
         std = np.sqrt(np.square(self.mbr.std) + np.square(other.mbr.std))
+        # std = np.maximum(self.mbr.std, other.mbr.std)
         delta = 1.0 / (2.0 * np.linalg.norm(std, ord=1)) * eps * std
         return self._check_overlapping(other, delta, beta)

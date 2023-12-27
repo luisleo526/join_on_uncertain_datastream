@@ -26,7 +26,7 @@ if __name__ == '__main__':
         objects = []
 
         means = np.random.uniform(-10, 10, (num_objects, dim))
-        stds = np.random.uniform(1, 5, (num_objects, dim))
+        stds = np.random.uniform(0, 10, (num_objects, dim))
 
         # compute distance matrix of means
         distance_matrix = np.linalg.norm(means[:, None, :] - means[None, :, :], axis=-1)
@@ -36,7 +36,7 @@ if __name__ == '__main__':
         for i in range(num_objects):
             mean = means[i]
             std = stds[i]
-            num_samples = np.random.randint(10, 30, 1)
+            num_samples = np.random.randint(5, 60, 1)
 
             tri = []
             gau = []
