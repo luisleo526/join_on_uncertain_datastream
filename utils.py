@@ -5,7 +5,37 @@ from typing import List, Tuple, Optional
 import numpy as np
 import numpy.random as npr
 
+from uncertain_object import UncertainObject
+
 GENERATOR_TYPE = List[Tuple[int, float, float]]
+
+
+def generate_objects(num_objects, dim, threshold=None):
+    objects = []
+    means = np.random.uniform(-10, 10, (num_objects, dim))
+    stds = np.random.uniform(0, 10, (num_objects, dim))
+    distance_matrix = np.linalg.norm(means[:, None, :] - means[None, :, :], axis=-1)
+    epsilon = np.quantile(distance_matrix.flatten(), threshold) if threshold is not None else None
+
+    for i in range(num_objects):
+        mean = means[i]
+        std = stds[i]
+        num_samples = np.random.randint(5, 60, 1)
+
+        tri = []
+        gau = []
+        uni = []
+        for d in range(dim):
+            if d % 3 == 0:
+                tri.append((d, mean[d] - std[d], mean[d] + std[d]))
+            elif d % 3 == 1:
+                gau.append((d, mean[d], std[d]))
+            else:
+                uni.append((d, mean[d] - std[d], mean[d] + std[d]))
+
+        objects.append(UncertainObject(generator(num_samples, tri, gau, uni)))
+
+    return objects, epsilon
 
 
 def generator(num_samples: int,

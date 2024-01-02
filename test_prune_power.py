@@ -5,8 +5,7 @@ import numpy as np
 from sklearn.metrics import classification_report
 from tqdm import tqdm
 
-from uncertain_object import UncertainObject
-from utils import generator
+from utils import generate_objects
 
 if __name__ == '__main__':
 
@@ -23,33 +22,7 @@ if __name__ == '__main__':
 
         dim = dims[dim_idx]
 
-        objects = []
-
-        means = np.random.uniform(-10, 10, (num_objects, dim))
-        stds = np.random.uniform(0, 10, (num_objects, dim))
-
-        # compute distance matrix of means
-        distance_matrix = np.linalg.norm(means[:, None, :] - means[None, :, :], axis=-1)
-
-        epsilon = np.quantile(distance_matrix.flatten(), threshold)
-
-        for i in range(num_objects):
-            mean = means[i]
-            std = stds[i]
-            num_samples = np.random.randint(5, 60, 1)
-
-            tri = []
-            gau = []
-            uni = []
-            for d in range(dim):
-                if d % 3 == 0:
-                    tri.append((d, mean[d] - std[d], mean[d] + std[d]))
-                elif d % 3 == 1:
-                    gau.append((d, mean[d], std[d]))
-                else:
-                    uni.append((d, mean[d] - std[d], mean[d] + std[d]))
-
-            objects.append(UncertainObject(generator(num_samples, tri, gau, uni)))
+        objects, epsilon = generate_objects(num_objects, dim, threshold)
 
         for idx, (i, j) in enumerate(tqdm(combinations(objects, 2), total=total_tests)):
             results[0, dim_idx, idx] = i.ej(j, epsilon)
