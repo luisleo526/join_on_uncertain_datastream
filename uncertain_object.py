@@ -1,6 +1,7 @@
 from typing import Optional
 
 import numpy as np
+import torch
 from munch import Munch
 
 
@@ -21,7 +22,19 @@ class UncertainObject(object):
         """
         return Munch(min=np.min(self.samples, axis=0),
                      max=np.max(self.samples, axis=0),
-                     std=np.std(self.samples, axis=0))
+                     std=np.std(self.samples, axis=0),
+                     mean=np.mean(self.samples, axis=0))
+
+    @property
+    def mbr_tensor(self):
+        """
+        :return: (num_dimensions, 4) tensor, contains min, max, std, mean
+        """
+        # (num_dimensions, 4) tensor, contains min, max, std, mean
+        x = torch.tensor([self.mbr.min.tolist(), self.mbr.max.tolist(),
+                          self.mbr.std.tolist(), self.mbr.mean.tolist()
+                          ])
+        return torch.transpose(x, 0, 1)
 
     def ej(self, other, eps: float, beta: float = 0.0) -> bool:
         """
