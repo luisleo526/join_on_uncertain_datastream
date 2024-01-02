@@ -129,7 +129,7 @@ class UncertainObject(object):
         assert self.num_dimensions == other.num_dimensions
 
         if delta is None:
-            delta = 1.0 / (2.0 * np.sqrt(self.num_dimensions)) * eps * np.ones(self.num_dimensions)
+            delta = 1.0 / (2.0 * np.sqrt(self.num_dimensions)) * eps * np.ones(self.num_dimensions) * 0.5
 
         return self._check_overlapping(other, delta, beta)
 
