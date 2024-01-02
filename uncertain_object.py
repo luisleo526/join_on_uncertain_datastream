@@ -75,6 +75,12 @@ class UncertainObject(object):
         area_self = self.mbr.max - self.mbr.min + 2.0 * delta
         area_other = other.mbr.max - other.mbr.min + 2.0 * delta
 
+        assert np.all(area_self >= 0.0), f'Area of self must be greater than or equal to 0.0, but got {area_self}'
+        assert np.all(area_other >= 0.0), f'Area of other must be greater than or equal to 0.0, but got {area_other}'
+
+        area_self = np.maximum(area_self, np.finfo(float).eps)
+        area_other = np.maximum(area_other, np.finfo(float).eps)
+
         # Calculate the conditions
         cond_self_greater = self.mbr.max > other.mbr.max
         cond_self_smaller = self.mbr.min < other.mbr.min
@@ -95,7 +101,7 @@ class UncertainObject(object):
                         np.where(cond_self_smaller, area1 / area_self, area1 ** 2 / (area_self * area_other)),
                         np.where(cond_self_smaller, area2 ** 2 / (area_self * area_other), area2 / area_other))
 
-        assert np.all(prob <= 1.0)
+        assert np.all(prob <= 1.0), f'Probabilities must be less than or equal to 1.0, but got {prob}'
 
         return np.prod(prob) > beta
 
