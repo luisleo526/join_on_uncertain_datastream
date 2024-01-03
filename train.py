@@ -9,7 +9,7 @@ from model import IEJModel
 
 if __name__ == '__main__':
 
-    num_objects = 1000
+    num_objects = 500
     dim = 3
     batch_size = 64
     num_epochs = 100
@@ -50,7 +50,7 @@ if __name__ == '__main__':
                 delta = w * 0.5 * epsilon
                 y_truth.append(a.ej(b, epsilon))
                 y_pred.append(a.iej(b, epsilon, delta))
-                break
+                progress_bar.update(1)
 
-        report = classification_report(y_truth, y_pred, output_dict=True, zero_division=0.0)
+        report = classification_report(y_truth, y_pred, output_dict=False, zero_division=0.0)
         print(report)
