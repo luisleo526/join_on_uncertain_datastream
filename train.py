@@ -15,7 +15,7 @@ if __name__ == '__main__':
     num_epochs = 100
 
     train_ds = UncertainObjectDataset(num_objects, dim, [0.05 * i for i in range(1, 11)])
-    eval_ds = UncertainObjectDataset(100, dim, [0.25])
+    eval_ds = UncertainObjectDataset(100, dim, [0.2, 0.5, 0.8])
 
     train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True, collate_fn=collate_fn, num_workers=8)
 
@@ -44,13 +44,17 @@ if __name__ == '__main__':
         model.eval()
         y_pred = []
         y_truth = []
+        y_pred_2 = []
         with torch.no_grad():
             for a, b, epsilon in eval_ds:
                 w = model(a.mbr_tensor.unsqueeze(0), b.mbr_tensor.unsqueeze(0)).numpy()[0]
                 delta = w * 0.5 * epsilon
                 y_truth.append(a.ej(b, epsilon))
                 y_pred.append(a.iej(b, epsilon, delta))
+                y_pred_2.append(a.iej(b, epsilon))
                 progress_bar.update(1)
 
         report = classification_report(y_truth, y_pred, output_dict=False, zero_division=0.0)
+        print(report)
+        report = classification_report(y_truth, y_pred_2, output_dict=False, zero_division=0.0)
         print(report)
