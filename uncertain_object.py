@@ -36,6 +36,9 @@ class UncertainObject(object):
                           ])
         return torch.transpose(x, 0, 1)
 
+    def __mod__(self, other):
+        return np.min(np.linalg.norm(self.samples[:, None, :] - other.samples[None, :, :], axis=-1))
+
     def ej(self, other, eps: float, beta: float = 0.0) -> bool:
         """
         :param other: UncertainObject

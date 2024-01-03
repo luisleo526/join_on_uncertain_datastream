@@ -77,12 +77,11 @@ class IEJModel(nn.Module):
         )
 
     def forward(self, a_tensor, b_tensor):
-        a_slices = torch.unbind(a_tensor, dim=0)
-        b_slices = torch.unbind(b_tensor, dim=0)
+        a_slices = torch.unbind(a_tensor, dim=1)
+        b_slices = torch.unbind(b_tensor, dim=1)
 
-        x = torch.cat([self.encoder(torch.unsqueeze(a, 0), torch.unsqueeze(b, 0))
-                       for a, b in zip(a_slices, b_slices)], dim=1)
-        x = self.decoder(x).squeeze(0)
+        x = torch.cat([self.encoder(a, b) for a, b in zip(a_slices, b_slices)], dim=1)
+        x = self.decoder(x)
         x = F.normalize(x, dim=0, p=2)
 
         return x

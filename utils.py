@@ -14,8 +14,9 @@ def generate_objects(num_objects, dim, threshold=None):
     objects = []
     means = np.random.uniform(-10, 10, (num_objects, dim))
     stds = np.random.uniform(1, 20, (num_objects, dim))
-    distance_matrix = np.linalg.norm(means[:, None, :] - means[None, :, :], axis=-1)
-    epsilon = np.quantile(distance_matrix.flatten(), threshold) if threshold is not None else None
+    epsilon = np.linalg.norm(means[:, None, :] - means[None, :, :], axis=-1)
+    if threshold is not None:
+        epsilon = np.quantile(epsilon.flatten(), threshold)
 
     for i in range(num_objects):
         mean = means[i]
