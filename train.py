@@ -71,6 +71,8 @@ if __name__ == '__main__':
                 torch.save(model.state_dict(), f'./ckpt/iej_{dim}_best.pth')
                 best_loss = acm_loss
 
+            torch.save(model.state_dict(), f'./ckpt/iej_{dim}_last.pth')
+
         # model.eval()
         # y_pred = []
         # y_truth = []
