@@ -34,7 +34,7 @@ if __name__ == '__main__':
         model = IEJModel(dim, 4)
         model.train()
         optim = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-5)
-        scheduler = torch.optim.lr_scheduler.ExponentialLR(optim, gamma=0.1)
+        scheduler = torch.optim.lr_scheduler.ExponentialLR(optim, gamma=0.5)
 
         progress_bar = tqdm(total=num_epochs * (len(train_dl) + len(eval_dl)))
 
