@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 import numpy as np
@@ -9,10 +10,12 @@ from dataset import UncertainObjectDataset, collate_fn
 from loss_fn import iej_loss
 from model import IEJModel
 
+logging.basicConfig(level=logging.INFO)
+
 if __name__ == '__main__':
 
-    num_objects = 500
-    num_epochs = 10
+    num_objects = 800
+    num_epochs = 15
     batch_size = 64
 
     dims = np.array(list(range(1, 8)), dtype=int)
@@ -28,7 +31,8 @@ if __name__ == '__main__':
 
         model = IEJModel(dim, 4)
         model.train()
-        optim = torch.optim.Adam(model.parameters(), lr=0.001)
+        optim = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-5)
+        scheduler = torch.optim.lr_scheduler.ExponentialLR(optim, gamma=0.1)
 
         progress_bar = tqdm(total=num_epochs * (len(train_dl)))
 
@@ -46,10 +50,11 @@ if __name__ == '__main__':
                 acm_loss += loss.item()
                 progress_bar.update(1)
 
-            print(f'Epoch {epoch + 1} loss: {acm_loss / len(train_dl)}')
+            scheduler.step()
+            logging.info(f'Epoch {epoch + 1} loss: {acm_loss / len(train_dl)}')
 
             # save model
-            torch.save(model.state_dict(), f'./ckpt/iej_{dim}_{epoch + 1}.pth')
+            torch.save(model.state_dict(), f'./ckpt/iej_{dim}_last.pth')
 
         # model.eval()
         # y_pred = []
