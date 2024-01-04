@@ -38,6 +38,7 @@ if __name__ == '__main__':
 
         progress_bar = tqdm(total=num_epochs * (len(train_dl) + len(eval_dl)))
 
+        best_loss = np.inf
         for epoch in range(num_epochs):
 
             train_ds = UncertainObjectDataset(num_objects, dim, [0.05 * i for i in range(1, 11)])
@@ -54,9 +55,6 @@ if __name__ == '__main__':
 
             scheduler.step()
 
-            # save model
-            torch.save(model.state_dict(), f'./ckpt/iej_{dim}_last.pth')
-
             model.eval()
             with torch.no_grad():
                 acm_loss = 0.0
@@ -67,6 +65,11 @@ if __name__ == '__main__':
                     progress_bar.update(1)
 
             logging.info(f'Epoch {epoch + 1} eval loss: {acm_loss / len(eval_dl)}')
+
+            if acm_loss < best_loss:
+                # save model
+                torch.save(model.state_dict(), f'./ckpt/iej_{dim}_best.pth')
+                best_loss = acm_loss
 
         # model.eval()
         # y_pred = []
