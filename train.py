@@ -26,35 +26,47 @@ if __name__ == '__main__':
     for dim in dims:
 
         train_ds = UncertainObjectDataset(num_objects, dim, [0.05 * i for i in range(1, 11)])
-        eval_ds = UncertainObjectDataset(100, dim, [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8])
         train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True, collate_fn=collate_fn, num_workers=8)
+
+        eval_ds = UncertainObjectDataset(100, dim, [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8])
+        eval_dl = DataLoader(eval_ds, batch_size=batch_size, shuffle=False, collate_fn=collate_fn, num_workers=8)
 
         model = IEJModel(dim, 4)
         model.train()
         optim = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-5)
         scheduler = torch.optim.lr_scheduler.ExponentialLR(optim, gamma=0.1)
 
-        progress_bar = tqdm(total=num_epochs * (len(train_dl)))
+        progress_bar = tqdm(total=num_epochs * (len(train_dl) + len(eval_dl)))
 
-        model.train()
         for epoch in range(num_epochs):
 
-            acm_loss = 0.0
+            train_ds = UncertainObjectDataset(num_objects, dim, [0.05 * i for i in range(1, 11)])
+            train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True, collate_fn=collate_fn, num_workers=8)
 
+            model.train()
             for a, b, epsilon, min_distance in train_dl:
                 optim.zero_grad()
                 w = model(a, b)
                 loss = iej_loss(w, a, b, epsilon, min_distance)
                 loss.backward()
                 optim.step()
-                acm_loss += loss.item()
                 progress_bar.update(1)
 
             scheduler.step()
-            logging.info(f'Epoch {epoch + 1} loss: {acm_loss / len(train_dl)}')
 
             # save model
             torch.save(model.state_dict(), f'./ckpt/iej_{dim}_last.pth')
+
+            model.eval()
+            with torch.no_grad():
+                acm_loss = 0.0
+                for a, b, epsilon, min_distance in eval_dl:
+                    w = model(a, b)
+                    loss = iej_loss(w, a, b, epsilon, min_distance)
+                    acm_loss += loss.item()
+                    progress_bar.update(1)
+
+            logging.info(f'Epoch {epoch + 1} eval loss: {acm_loss / len(eval_dl)}')
 
         # model.eval()
         # y_pred = []
