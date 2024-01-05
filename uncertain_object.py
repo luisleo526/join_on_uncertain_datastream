@@ -61,33 +61,6 @@ class UncertainObject(object):
         :return: Boolean
         """
 
-        # prob = np.zeros(self.num_dimensions)
-        #
-        # area_self = self.mbr.max - self.mbr.min + 2.0 * delta
-        # area_other = other.mbr.max - other.mbr.min + 2.0 * delta
-        #
-        # for i in range(self.num_dimensions):
-        #
-        #     if self.mbr.max[i] > other.mbr.max[i]:
-        #         if self.mbr.min[i] < other.mbr.min[i]:
-        #             area = other.mbr.max[i] - other.mbr.min[i] + 2.0 * delta[i]
-        #             prob[i] = area / area_self[i]
-        #         else:
-        #             area = other.mbr.max[i] - self.mbr.min[i] + 2.0 * delta[i]
-        #             if area < 0.0:
-        #                 area = 0.0
-        #             prob[i] = area ** 2 / (area_self[i] * area_other[i])
-        #
-        #     else:
-        #         if other.mbr.min[i] < self.mbr.min[i]:
-        #             area = self.mbr.max[i] - self.mbr.min[i] + 2.0 * delta[i]
-        #             prob[i] = area / area_other[i]
-        #         else:
-        #             area = self.mbr.max[i] - other.mbr.min[i] + 2.0 * delta[i]
-        #             if area < 0.0:
-        #                 area = 0.0
-        #             prob[i] = area ** 2 / (area_self[i] * area_other[i])
-
         area_self = self.mbr.max - self.mbr.min + 2.0 * delta
         area_other = other.mbr.max - other.mbr.min + 2.0 * delta
 

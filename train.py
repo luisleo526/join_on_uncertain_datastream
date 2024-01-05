@@ -14,9 +14,9 @@ logging.basicConfig(level=logging.INFO)
 
 if __name__ == '__main__':
 
-    num_objects = 800
-    num_epochs = 15
-    batch_size = 64
+    num_objects = 500
+    num_epochs = 60
+    batch_size = 16
 
     dims = np.array(list(range(1, 8)), dtype=int)
     dims = np.power(2, dims)
@@ -34,15 +34,17 @@ if __name__ == '__main__':
         model = IEJModel(dim, 4)
         model.train()
         optim = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-5)
-        scheduler = torch.optim.lr_scheduler.ExponentialLR(optim, gamma=0.5)
+        scheduler = torch.optim.lr_scheduler.ExponentialLR(optim, gamma=0.9)
 
         progress_bar = tqdm(total=num_epochs * (len(train_dl) + len(eval_dl)))
 
         best_loss = np.inf
         for epoch in range(num_epochs):
 
-            train_ds = UncertainObjectDataset(num_objects, dim, [0.05 * i for i in range(1, 11)])
-            train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True, collate_fn=collate_fn, num_workers=8)
+            if epoch % 5 == 0:
+                train_ds = UncertainObjectDataset(num_objects, dim, [0.05 * i for i in range(1, 11)])
+                train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True, collate_fn=collate_fn,
+                                      num_workers=8)
 
             model.train()
             for a, b, epsilon, min_distance in train_dl:
@@ -72,18 +74,3 @@ if __name__ == '__main__':
                 best_loss = acm_loss
 
             torch.save(model.state_dict(), f'./ckpt/iej_{dim}_last.pth')
-
-        # model.eval()
-        # y_pred = []
-        # y_truth = []
-        # y_iej = []
-        # y_oiej = []
-        # with torch.no_grad():
-        #     for a, b, epsilon in eval_ds:
-        #         w = model(a.mbr_tensor.unsqueeze(0), b.mbr_tensor.unsqueeze(0)).numpy()[0]
-        #         delta = w * 0.5 * epsilon
-        #         y_pred.append(a.iej(b, epsilon, delta))
-        #
-        #         y_truth.append(a.ej(b, epsilon))
-        #         y_iej.append(a.iej(b, epsilon))
-        #         y_oiej.append(a.o_iej(b, epsilon))
