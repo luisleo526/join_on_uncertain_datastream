@@ -32,6 +32,7 @@ if __name__ == '__main__':
         eval_dl = DataLoader(eval_ds, batch_size=batch_size, shuffle=False, collate_fn=collate_fn, num_workers=8)
 
         model = IEJModel(dim, 4)
+        model.cuda()
         model.train()
         optim = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-5)
         scheduler = torch.optim.lr_scheduler.ExponentialLR(optim, gamma=0.9)
@@ -48,6 +49,7 @@ if __name__ == '__main__':
 
             model.train()
             for a, b, epsilon, min_distance in train_dl:
+                a, b, epsilon, min_distance = a.cuda(), b.cuda(), epsilon.cuda(), min_distance.cuda()
                 optim.zero_grad()
                 w = model(a, b)
                 loss = iej_loss(w, a, b, epsilon, min_distance)
@@ -61,6 +63,7 @@ if __name__ == '__main__':
             with torch.no_grad():
                 acm_loss = 0.0
                 for a, b, epsilon, min_distance in eval_dl:
+                    a, b, epsilon, min_distance = a.cuda(), b.cuda(), epsilon.cuda(), min_distance.cuda()
                     w = model(a, b)
                     loss = iej_loss(w, a, b, epsilon, min_distance)
                     acm_loss += loss.item()
