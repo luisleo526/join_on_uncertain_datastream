@@ -14,7 +14,7 @@ if __name__ == '__main__':
     num_turns = int(input('Number of turns: '))
 
     total_tests = int(num_objects * (num_objects - 1) / 2)
-    dims = np.array(list(range(1, 8)), dtype=int)
+    dims = np.array(list(range(1, 9)), dtype=int)
     dims = np.power(2, dims)
 
     results = np.zeros((4, dims.size, total_tests * num_turns), dtype=int)
