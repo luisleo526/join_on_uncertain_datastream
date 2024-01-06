@@ -49,6 +49,10 @@ if __name__ == '__main__':
     }
 
     for k in range(dims.size):
+        # To avoid zero division
+        results[:, k, 0] = 0
+        results[:, k, 1] = 1
+
         iej = classification_report(results[0, k], results[1, k], output_dict=True, zero_division=0.0)
         oiej = classification_report(results[0, k], results[2, k], output_dict=True, zero_division=0.0)
         dl_iej = classification_report(results[0, k], results[3, k], output_dict=True, zero_division=0.0)
