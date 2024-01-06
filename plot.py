@@ -1,3 +1,5 @@
+import logging
+
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
@@ -8,6 +10,7 @@ from dataset import UncertainObjectDataset
 from model import IEJModel
 from utils import generate_objects
 
+logging.basicConfig(level=logging.INFO)
 if __name__ == '__main__':
 
     num_objects = int(input('Number of objects: '))
@@ -42,6 +45,17 @@ if __name__ == '__main__':
                     results[2, dim_idx, turn * total_tests + idx] = a.o_iej(b, epsilon)
                     results[3, dim_idx, turn * total_tests + idx] = a.iej(b, epsilon, delta)
 
+        # To avoid zero division
+        results[:, dim_idx, 0] = 0
+        results[:, dim_idx, 1] = 1
+
+        logging.info('IEJ')
+        logging.info(classification_report(results[0, dim_idx], results[1, dim_idx]))
+        logging.info('O_IEJ')
+        logging.info(classification_report(results[0, dim_idx], results[2, dim_idx]))
+        logging.info('O_IEJ (DL)')
+        logging.info(classification_report(results[0, dim_idx], results[3, dim_idx]))
+
     data = {
         'precision': np.zeros((6, dims.size)),
         'recall': np.zeros((6, dims.size)),
@@ -49,10 +63,6 @@ if __name__ == '__main__':
     }
 
     for k in range(dims.size):
-        # To avoid zero division
-        results[:, k, 0] = 0
-        results[:, k, 1] = 1
-
         iej = classification_report(results[0, k], results[1, k], output_dict=True, zero_division=0.0)
         oiej = classification_report(results[0, k], results[2, k], output_dict=True, zero_division=0.0)
         dl_iej = classification_report(results[0, k], results[3, k], output_dict=True, zero_division=0.0)
