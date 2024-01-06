@@ -36,6 +36,12 @@ if __name__ == '__main__':
 
     results = np.zeros((4, dims.size, total_tests * num_turns), dtype=int)
 
+    data = {
+        'precision': np.zeros((6, dims.size)),
+        'recall': np.zeros((6, dims.size)),
+        'f1-score': np.zeros((6, dims.size))
+    }
+
     for dim_idx in range(dims.size):
 
         dim = dims[dim_idx]
@@ -47,6 +53,11 @@ if __name__ == '__main__':
         model.load_state_dict(torch.load(f'./ckpt/iej_{dim}_best.pth'))
         model.eval()
 
+        ej = [0, 1]
+        iej = [0, 1]
+        oiej = [0, 1]
+        oiej_dl = [0, 1]
+
         with torch.no_grad():
             for turn in range(num_turns):
                 for idx in tqdm(range(len(eval_ds)), desc=f'Dim {dim} Turn {turn}'):
@@ -54,40 +65,28 @@ if __name__ == '__main__':
                     w = model(a.mbr_tensor.unsqueeze(0), b.mbr_tensor.unsqueeze(0)).numpy()[0]
                     delta = w * 0.5 * epsilon
 
-                    results[0, dim_idx, turn * total_tests + idx] = a.ej(b, epsilon)
-                    results[1, dim_idx, turn * total_tests + idx] = a.iej(b, epsilon)
-                    results[2, dim_idx, turn * total_tests + idx] = a.o_iej(b, epsilon)
-                    results[3, dim_idx, turn * total_tests + idx] = a.iej(b, epsilon, delta)
-
-        # To avoid zero division
-        results[:, dim_idx, 0] = 0
-        results[:, dim_idx, 1] = 1
+                    ej.append(int(a.ej(b, epsilon)))
+                    iej.append(int(a.iej(b, epsilon)))
+                    oiej.append(int(a.o_iej(b, epsilon)))
+                    oiej_dl.append(int(a.iej(b, epsilon, delta)))
 
         logger.info(f'Dim {dim}')
-
         logger.info('IEJ')
-        logger.info('\n' + classification_report(results[0, dim_idx], results[1, dim_idx]))
+        logger.info('\n' + classification_report(ej, iej, digits=4))
         logger.info('O_IEJ')
-        logger.info('\n' + classification_report(results[0, dim_idx], results[2, dim_idx]))
+        logger.info('\n' + classification_report(ej, oiej, digits=4))
         logger.info('O_IEJ (DL)')
-        logger.info('\n' + classification_report(results[0, dim_idx], results[3, dim_idx]))
+        logger.info('\n' + classification_report(ej, oiej_dl, digits=4))
 
-    data = {
-        'precision': np.zeros((6, dims.size)),
-        'recall': np.zeros((6, dims.size)),
-        'f1-score': np.zeros((6, dims.size))
-    }
-
-    for k in range(dims.size):
-        iej = classification_report(results[0, k], results[1, k], output_dict=True, zero_division=0.0)
-        oiej = classification_report(results[0, k], results[2, k], output_dict=True, zero_division=0.0)
-        dl_iej = classification_report(results[0, k], results[3, k], output_dict=True, zero_division=0.0)
+        iej = classification_report(ej, iej, output_dict=True)
+        oiej = classification_report(ej, oiej, output_dict=True)
+        oiej_dl = classification_report(ej, oiej_dl, output_dict=True)
 
         for tgt_idx, tgt in enumerate(['0', '1']):
             for metric in ['precision', 'recall', 'f1-score']:
-                data[metric][0 + 3 * tgt_idx, k] = iej[tgt][metric]
-                data[metric][1 + 3 * tgt_idx, k] = oiej[tgt][metric]
-                data[metric][2 + 3 * tgt_idx, k] = dl_iej[tgt][metric]
+                data[metric][0 + 3 * tgt_idx, dim_idx] = iej[tgt][metric]
+                data[metric][1 + 3 * tgt_idx, dim_idx] = oiej[tgt][metric]
+                data[metric][2 + 3 * tgt_idx, dim_idx] = oiej_dl[tgt][metric]
 
     fig, axs = plt.subplots(3, 2, figsize=(10, 13))
 
