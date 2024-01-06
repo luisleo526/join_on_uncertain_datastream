@@ -38,7 +38,7 @@ if __name__ == '__main__':
         dim = dims[dim_idx]
 
         objects, _ = generate_objects(num_objects, dim, None)
-        eval_ds = UncertainObjectDataset(num_objects, dim, [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8])
+        eval_ds = UncertainObjectDataset(num_objects, dim, [0.1 + 0.025 * i for i in range(30)])
 
         model = IEJModel(dim, 4)
         model.load_state_dict(torch.load(f'./ckpt/iej_{dim}_best.pth'))
