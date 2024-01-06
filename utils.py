@@ -13,7 +13,7 @@ GENERATOR_TYPE = List[Tuple[int, float, float]]
 def generate_objects(num_objects, dim, threshold=None):
     objects = []
     means = np.random.uniform(-10, 10, (num_objects, dim))
-    stds = np.random.uniform(1, 20, (num_objects, dim))
+    stds = np.random.uniform(1, 10, (num_objects, dim))
     epsilon = np.linalg.norm(means[:, None, :] - means[None, :, :], axis=-1)
     if threshold is not None:
         epsilon = np.quantile(epsilon.flatten(), threshold)
