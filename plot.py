@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,9 +11,11 @@ from dataset import UncertainObjectDataset
 from model import IEJModel
 from utils import generate_objects
 
+time_string = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+
 logger = logging.getLogger(__name__)
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-fh = logging.FileHandler('log.txt', encoding='utf-8')
+fh = logging.FileHandler(f'log_{time_string}.txt', encoding='utf-8')
 fh.setLevel(logging.INFO)
 ch = logging.StreamHandler()
 ch.setLevel(logging.INFO)
