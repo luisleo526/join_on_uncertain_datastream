@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
+from pathlib import Path
 
-import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from sklearn.metrics import classification_report
@@ -34,13 +34,7 @@ if __name__ == '__main__':
     dims = np.array(list(range(1, 9)), dtype=int)
     dims = np.power(2, dims)
 
-    results = np.zeros((4, dims.size, total_tests * num_turns), dtype=int)
-
-    data = {
-        'precision': np.zeros((6, dims.size)),
-        'recall': np.zeros((6, dims.size)),
-        'f1-score': np.zeros((6, dims.size))
-    }
+    Path('./results').mkdir(parents=True, exist_ok=True)
 
     for dim_idx in range(dims.size):
 
@@ -70,6 +64,11 @@ if __name__ == '__main__':
                     oiej.append(int(a.o_iej(b, epsilon)))
                     oiej_dl.append(int(a.iej(b, epsilon, delta)))
 
+        ej = np.array(ej)
+        iej = np.array(iej)
+        oiej = np.array(oiej)
+        oiej_dl = np.array(oiej_dl)
+
         logger.info(f'Dim {dim}')
         logger.info('IEJ')
         logger.info('\n' + classification_report(ej, iej, digits=4))
@@ -78,59 +77,10 @@ if __name__ == '__main__':
         logger.info('O_IEJ (DL)')
         logger.info('\n' + classification_report(ej, oiej_dl, digits=4))
 
-        iej = classification_report(ej, iej, output_dict=True)
-        oiej = classification_report(ej, oiej, output_dict=True)
-        oiej_dl = classification_report(ej, oiej_dl, output_dict=True)
+        # save ej, iej, oiej, oiej_dl with numpy array
+        np.save(f'./results/ej_{dim}.npy', ej)
+        np.save(f'./results/iej_{dim}.npy', iej)
+        np.save(f'./results/oiej_{dim}.npy', oiej)
+        np.save(f'./results/oiej_dl_{dim}.npy', oiej_dl)
 
-        for tgt_idx, tgt in enumerate(['0', '1']):
-            for metric in ['precision', 'recall', 'f1-score']:
-                data[metric][0 + 3 * tgt_idx, dim_idx] = iej[tgt][metric]
-                data[metric][1 + 3 * tgt_idx, dim_idx] = oiej[tgt][metric]
-                data[metric][2 + 3 * tgt_idx, dim_idx] = oiej_dl[tgt][metric]
-
-    fig, axs = plt.subplots(3, 2, figsize=(10, 13))
-
-    axs[0][0].plot(dims, data['precision'][0], label='IEJ', marker='o')
-    axs[0][0].plot(dims, data['precision'][1], label='O_IEJ', marker='o')
-    axs[0][0].plot(dims, data['precision'][2], label='O_IEJ (DL)', marker='o')
-    axs[0][0].set_title('Precision (0)')
-    axs[0][0].set_xscale('log', base=2)
-    axs[0][0].legend()
-
-    axs[1][0].plot(dims, data['recall'][0], label='IEJ', marker='o')
-    axs[1][0].plot(dims, data['recall'][1], label='O_IEJ', marker='o')
-    axs[1][0].plot(dims, data['recall'][2], label='O_IEJ (DL)', marker='o')
-    axs[1][0].set_title('Recall (0)')
-    axs[1][0].set_xscale('log', base=2)
-    axs[1][0].legend()
-
-    axs[2][0].plot(dims, data['f1-score'][0], label='IEJ', marker='o')
-    axs[2][0].plot(dims, data['f1-score'][1], label='O_IEJ', marker='o')
-    axs[2][0].plot(dims, data['f1-score'][2], label='O_IEJ (DL)', marker='o')
-    axs[2][0].set_title('F1 Score (0)')
-    axs[2][0].set_xscale('log', base=2)
-    axs[2][0].legend()
-
-    axs[0][1].plot(dims, data['precision'][3], label='IEJ', marker='o')
-    axs[0][1].plot(dims, data['precision'][4], label='O_IEJ', marker='o')
-    axs[0][1].plot(dims, data['precision'][5], label='O_IEJ (DL)', marker='o')
-    axs[0][1].set_title('Precision (1)')
-    axs[0][1].set_xscale('log', base=2)
-    axs[0][1].legend()
-
-    axs[1][1].plot(dims, data['recall'][3], label='IEJ', marker='o')
-    axs[1][1].plot(dims, data['recall'][4], label='O_IEJ', marker='o')
-    axs[1][1].plot(dims, data['recall'][5], label='O_IEJ (DL)', marker='o')
-    axs[1][1].set_title('Recall (1)')
-    axs[1][1].set_xscale('log', base=2)
-    axs[1][1].legend()
-
-    axs[2][1].plot(dims, data['f1-score'][3], label='IEJ', marker='o')
-    axs[2][1].plot(dims, data['f1-score'][4], label='O_IEJ', marker='o')
-    axs[2][1].plot(dims, data['f1-score'][5], label='O_IEJ (DL)', marker='o')
-    axs[2][1].set_title('F1 Score (1)')
-    axs[2][1].set_xscale('log', base=2)
-    axs[2][1].legend()
-
-    # save figure
-    plt.savefig(f'{num_objects}.png', dpi=180, bbox_inches='tight')
+        # calculate precision, recall, f1-score
