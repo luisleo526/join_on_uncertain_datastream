@@ -11,32 +11,36 @@ from utils import generate_objects
 if __name__ == '__main__':
 
     num_objects = int(input('Number of objects: '))
+    num_turns = int(input('Number of turns: '))
 
     total_tests = int(num_objects * (num_objects - 1) / 2)
     dims = np.array(list(range(1, 8)), dtype=int)
     dims = np.power(2, dims)
 
-    results = np.zeros((4, dims.size, total_tests), dtype=int)
+    results = np.zeros((4, dims.size, total_tests * num_turns), dtype=int)
 
     for dim_idx in range(dims.size):
 
         dim = dims[dim_idx]
 
         objects, _ = generate_objects(num_objects, dim, None)
-        eval_ds = UncertainObjectDataset(num_objects, dim, [0.1 + 0.2 * i for i in range(4)])
+        eval_ds = UncertainObjectDataset(num_objects, dim, [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8])
+
         model = IEJModel(dim, 4)
         model.load_state_dict(torch.load(f'./ckpt/iej_{dim}_best.pth'))
         model.eval()
-        with torch.no_grad():
-            for idx in tqdm(range(len(eval_ds))):
-                a, b, epsilon = eval_ds[idx]
-                w = model(a.mbr_tensor.unsqueeze(0), b.mbr_tensor.unsqueeze(0)).numpy()[0]
-                delta = w * 0.5 * epsilon
 
-                results[0, dim_idx, idx] = a.ej(b, epsilon)
-                results[1, dim_idx, idx] = a.iej(b, epsilon)
-                results[2, dim_idx, idx] = a.o_iej(b, epsilon)
-                results[3, dim_idx, idx] = a.iej(b, epsilon, delta)
+        with torch.no_grad():
+            for turn in range(num_turns):
+                for idx in tqdm(range(len(eval_ds)), desc=f'Dim {dim} Turn {turn}'):
+                    a, b, epsilon = eval_ds[idx]
+                    w = model(a.mbr_tensor.unsqueeze(0), b.mbr_tensor.unsqueeze(0)).numpy()[0]
+                    delta = w * 0.5 * epsilon
+
+                    results[0, dim_idx, turn * total_tests + idx] = a.ej(b, epsilon)
+                    results[1, dim_idx, turn * total_tests + idx] = a.iej(b, epsilon)
+                    results[2, dim_idx, turn * total_tests + idx] = a.o_iej(b, epsilon)
+                    results[3, dim_idx, turn * total_tests + idx] = a.iej(b, epsilon, delta)
 
     data = {
         'precision': np.zeros((6, dims.size)),
