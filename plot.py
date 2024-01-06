@@ -10,7 +10,18 @@ from dataset import UncertainObjectDataset
 from model import IEJModel
 from utils import generate_objects
 
-logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+fh = logging.FileHandler('log.txt', encoding='utf-8')
+fh.setLevel(logging.INFO)
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+fh.setFormatter(formatter)
+ch.setFormatter(formatter)
+logger.addHandler(fh)
+logger.addHandler(ch)
+logger.setLevel(logging.INFO)
+
 if __name__ == '__main__':
 
     num_objects = int(input('Number of objects: '))
@@ -49,12 +60,14 @@ if __name__ == '__main__':
         results[:, dim_idx, 0] = 0
         results[:, dim_idx, 1] = 1
 
+        logging.info(f'Dim {dim}')
+
         logging.info('IEJ')
-        logging.info(classification_report(results[0, dim_idx], results[1, dim_idx]))
+        logging.info('\n' + classification_report(results[0, dim_idx], results[1, dim_idx]))
         logging.info('O_IEJ')
-        logging.info(classification_report(results[0, dim_idx], results[2, dim_idx]))
+        logging.info('\n' + classification_report(results[0, dim_idx], results[2, dim_idx]))
         logging.info('O_IEJ (DL)')
-        logging.info(classification_report(results[0, dim_idx], results[3, dim_idx]))
+        logging.info('\n' + classification_report(results[0, dim_idx], results[3, dim_idx]))
 
     data = {
         'precision': np.zeros((6, dims.size)),
