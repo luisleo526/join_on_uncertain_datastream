@@ -60,14 +60,14 @@ if __name__ == '__main__':
         results[:, dim_idx, 0] = 0
         results[:, dim_idx, 1] = 1
 
-        logging.info(f'Dim {dim}')
+        logger.info(f'Dim {dim}')
 
-        logging.info('IEJ')
-        logging.info('\n' + classification_report(results[0, dim_idx], results[1, dim_idx]))
-        logging.info('O_IEJ')
-        logging.info('\n' + classification_report(results[0, dim_idx], results[2, dim_idx]))
-        logging.info('O_IEJ (DL)')
-        logging.info('\n' + classification_report(results[0, dim_idx], results[3, dim_idx]))
+        logger.info('IEJ')
+        logger.info('\n' + classification_report(results[0, dim_idx], results[1, dim_idx]))
+        logger.info('O_IEJ')
+        logger.info('\n' + classification_report(results[0, dim_idx], results[2, dim_idx]))
+        logger.info('O_IEJ (DL)')
+        logger.info('\n' + classification_report(results[0, dim_idx], results[3, dim_idx]))
 
     data = {
         'precision': np.zeros((6, dims.size)),
