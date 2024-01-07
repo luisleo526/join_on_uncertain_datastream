@@ -39,17 +39,13 @@ class UncertainObject(object):
     def __mod__(self, other):
         return np.min(np.linalg.norm(self.samples[:, None, :] - other.samples[None, :, :], axis=-1))
 
-    def ej(self, other, eps: float, beta: float = 0.0) -> bool:
+    def ej(self, other, eps: float) -> bool:
         """
         :param other: UncertainObject
         :param eps: Epsilon
-        :param beta: Probability threshold
         :return: Boolean
         """
         assert self.num_dimensions == other.num_dimensions
-
-        # Compute the distance between each pair of samples
-        distances = np.linalg.norm(self.samples[:, None, :] - other.samples[None, :, :], axis=-1)
 
         area_a = self.mbr.max - self.mbr.min
         area_b = other.mbr.max - other.mbr.min
@@ -75,13 +71,12 @@ class UncertainObject(object):
                         np.where(cond_a_smaller, area1 / area_a, area1 ** 2 / (area_a * area_b)),
                         np.where(cond_a_smaller, area2 ** 2 / (area_a * area_b), area2 / area_b))
 
-        return distances[distances < eps].size > beta * distances.size or np.prod(prob) > beta
+        return self % other < eps or np.prod(prob) > 0.0
 
-    def _check_overlapping(self, other, delta: np.ndarray, beta: float = 0.0) -> bool:
+    def _check_overlapping(self, other, delta: np.ndarray) -> bool:
         """
         :param other: UncertainObject
         :param delta: (num_dimensions,) array of deltas
-        :param beta: Probability threshold
         :return: Boolean
         """
 
@@ -118,14 +113,13 @@ class UncertainObject(object):
 
         assert np.all(prob <= 1.0), f'Probabilities must be less than or equal to 1.0, but got {prob}'
 
-        return np.prod(prob) > beta
+        return np.prod(prob) > 0.0
 
-    def iej(self, other, eps: float, delta: Optional[np.ndarray] = None, beta: float = 0.0) -> bool:
+    def iej(self, other, eps: float, delta: Optional[np.ndarray] = None) -> bool:
         """
         :param other: UncertainObject
         :param eps: Epsilon
         :param delta: (num_dimensions,) array of deltas
-        :param beta: Probability threshold
         :return: Boolean
         """
         assert self.num_dimensions == other.num_dimensions
@@ -134,13 +128,12 @@ class UncertainObject(object):
             ones = np.ones(self.num_dimensions)
             delta = 1.0 / (2.0 * np.linalg.norm(ones)) * eps * ones
 
-        return self._check_overlapping(other, delta, beta)
+        return self._check_overlapping(other, delta)
 
-    def o_iej(self, other, eps: float, beta: float = 0.0) -> bool:
+    def o_iej(self, other, eps: float) -> bool:
         """
         :param other: UncertainObject
         :param eps: Epsilon
-        :param beta: Probability threshold
         :return: Boolean
         """
         assert self.num_dimensions == other.num_dimensions
@@ -149,4 +142,4 @@ class UncertainObject(object):
         # std = np.sqrt(np.square(self.mbr.std) + np.square(other.mbr.std))
         # std = np.maximum(self.mbr.std, other.mbr.std)
         delta = 1.0 / (2.0 * np.linalg.norm(std)) * eps * std
-        return self._check_overlapping(other, delta, beta)
+        return self._check_overlapping(other, delta)

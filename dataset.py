@@ -34,7 +34,17 @@ def collate_fn(batch):
     for a, b, epsilon in batch:
         a_tensor.append(a.mbr_tensor)
         b_tensor.append(b.mbr_tensor)
-        epsilons.append(epsilon)
+        epsilons.append(a % b)
+        min_distances.append(a % b)
+
+        a_tensor.append(a.mbr_tensor)
+        b_tensor.append(b.mbr_tensor)
+        epsilons.append((a % b) * 0.95)
+        min_distances.append(a % b)
+
+        a_tensor.append(a.mbr_tensor)
+        b_tensor.append(b.mbr_tensor)
+        epsilons.append((a % b) * 1.05)
         min_distances.append(a % b)
 
     return torch.stack(a_tensor), torch.stack(b_tensor), torch.tensor(epsilons), torch.tensor(min_distances)
@@ -50,7 +60,19 @@ def collate_fn2(batch):
     for a, b, epsilon in batch:
         a_tensor.append(a.mbr_tensor)
         b_tensor.append(b.mbr_tensor)
-        epsilons.append(epsilon)
+        epsilons.append(a % b)
+        a_objects.append(a)
+        b_objects.append(b)
+
+        a_tensor.append(a.mbr_tensor)
+        b_tensor.append(b.mbr_tensor)
+        epsilons.append((a % b) * 0.95)
+        a_objects.append(a)
+        b_objects.append(b)
+
+        a_tensor.append(a.mbr_tensor)
+        b_tensor.append(b.mbr_tensor)
+        epsilons.append((a % b) * 1.05)
         a_objects.append(a)
         b_objects.append(b)
 
