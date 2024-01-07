@@ -94,8 +94,9 @@ class SimpleIEJ(nn.Module):
         self.flatten = nn.Flatten()
         self.model = nn.Sequential(
             nn.Linear(2 * num_dimensions * num_features, hidden_size),
-            nn.ReLU(),
-            nn.Linear(hidden_size, num_dimensions)
+            nn.Sigmoid(),
+            nn.Linear(hidden_size, num_dimensions),
+            nn.Sigmoid(),
         )
 
     def forward(self, a_tensor, b_tensor):
