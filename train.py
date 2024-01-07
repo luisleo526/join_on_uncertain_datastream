@@ -42,7 +42,8 @@ if __name__ == '__main__':
 
     for _dim in args.dims:
 
-        dim = int(2 ** _dim)
+        # dim = int(2 ** _dim)
+        dim = _dim
 
         train_ds = UncertainObjectDataset(num_objects, dim, [0.05 * i for i in range(1, 11)])
         train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True, collate_fn=collate_fn, num_workers=8)
