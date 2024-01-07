@@ -45,7 +45,7 @@ if __name__ == '__main__':
         # dim = int(2 ** _dim)
         dim = _dim
 
-        train_ds = UncertainObjectDataset(num_objects, dim, [0.05 * i for i in range(1, 11)])
+        train_ds = UncertainObjectDataset(num_objects, dim, [0.1 + 0.025 * i for i in range(30)])
         train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True, collate_fn=collate_fn, num_workers=8)
 
         eval_ds = UncertainObjectDataset(100, dim, [0.1 + 0.025 * i for i in range(30)])
@@ -63,7 +63,7 @@ if __name__ == '__main__':
         for epoch in range(num_epochs):
 
             if epoch % args.epochs_per_turn == 0:
-                train_ds = UncertainObjectDataset(num_objects, dim, [0.05 * i for i in range(1, 11)])
+                train_ds = UncertainObjectDataset(num_objects, dim, [0.1 + 0.025 * i for i in range(30)])
                 train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True, collate_fn=collate_fn,
                                       num_workers=8)
 
