@@ -9,7 +9,8 @@ from tqdm import tqdm
 
 from dataset import UncertainObjectDataset, collate_fn, collate_fn2
 from loss_fn import iej_loss
-from model import IEJModel
+# from model import IEJModel
+from model import SimpleIEJ as IEJModel
 
 logging.basicConfig(level=logging.INFO)
 
@@ -25,6 +26,7 @@ def parse_args():
     parser.add_argument('--gamma', type=float, default=0.9)
     parser.add_argument('--weight_decay', type=float, default=1e-3)
     parser.add_argument('--device', type=str, default='cuda')
+    parser.add_argument('--hidden_size', type=int, default=16)
     return parser.parse_args()
 
 
@@ -48,11 +50,11 @@ if __name__ == '__main__':
         train_ds = UncertainObjectDataset(num_objects, dim, [0.1 + 0.025 * i for i in range(30)])
         train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True, collate_fn=collate_fn, num_workers=8)
 
-        #eval_ds = UncertainObjectDataset(100, dim, [0.1 + 0.025 * i for i in range(30)])
+        # eval_ds = UncertainObjectDataset(100, dim, [0.1 + 0.025 * i for i in range(30)])
         eval_ds = UncertainObjectDataset(100, dim, [0.2])
         eval_dl = DataLoader(eval_ds, batch_size=batch_size, shuffle=False, collate_fn=collate_fn2, num_workers=8)
 
-        model = IEJModel(dim, 4)
+        model = IEJModel(dim, 4, args.hidden_size)
         model.to(device)
         model.train()
         optim = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=args.weight_decay)

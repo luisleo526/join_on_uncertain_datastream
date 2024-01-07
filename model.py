@@ -77,11 +77,34 @@ class IEJModel(nn.Module):
         )
 
     def forward(self, a_tensor, b_tensor):
+        # Input: (batch_size, num_dimensions, num_features)
         a_slices = torch.unbind(a_tensor, dim=1)
         b_slices = torch.unbind(b_tensor, dim=1)
 
         x = torch.cat([self.encoder(a, b) for a, b in zip(a_slices, b_slices)], dim=1)
         x = self.decoder(x)
+        x = F.normalize(x, dim=1, p=2)
+
+        return x
+
+
+class SimpleIEJ(nn.Module):
+    def __init__(self, num_dimensions, num_features=4, hidden_size=16):
+        super(SimpleIEJ, self).__init__()
+        self.flatten = nn.Flatten()
+        self.model = nn.Sequential(
+            nn.Linear(2 * num_dimensions * num_features, hidden_size),
+            nn.ReLU(),
+            nn.Linear(hidden_size, num_dimensions)
+        )
+
+    def forward(self, a_tensor, b_tensor):
+        a_tensor = self.flatten(a_tensor)
+        b_tensor = self.flatten(b_tensor)
+
+        x = torch.cat((a_tensor, b_tensor), dim=1)
+
+        x = self.model(x)
         x = F.normalize(x, dim=1, p=2)
 
         return x
