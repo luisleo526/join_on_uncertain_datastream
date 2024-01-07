@@ -73,6 +73,7 @@ if __name__ == '__main__':
                                       num_workers=8)
 
             model.train()
+            acm_loss = 0.0
             for a, b, epsilon, min_distance in train_dl:
                 a, b, epsilon, min_distance = a.to(device), b.to(device), epsilon.to(device), min_distance.to(device)
                 optim.zero_grad()
@@ -80,7 +81,10 @@ if __name__ == '__main__':
                 loss = iej_loss(w, a, b, epsilon, min_distance)
                 loss.backward()
                 optim.step()
+                acm_loss += loss.item()
                 progress_bar.update(1)
+
+            logging.info(f'Epoch {epoch + 1} loss: {acm_loss / len(train_dl)}')
 
             scheduler.step()
 
