@@ -89,15 +89,18 @@ class IEJModel(nn.Module):
 
 
 class SimpleIEJ(nn.Module):
-    def __init__(self, num_dimensions, num_features=4, hidden_size=16):
+    def __init__(self, num_dimensions, num_features=4, hidden_size=16, num_layers=2):
         super(SimpleIEJ, self).__init__()
         self.flatten = nn.Flatten()
         self.model = nn.Sequential(
             nn.Linear(2 * num_dimensions * num_features, hidden_size),
-            nn.Sigmoid(),
-            nn.Linear(hidden_size, num_dimensions),
-            nn.Sigmoid(),
+            nn.Tanh(),
         )
+        for _ in range(num_layers):
+            self.model.append(nn.Linear(hidden_size, hidden_size))
+            self.model.append(nn.Tanh())
+        self.model.append(nn.Linear(hidden_size, num_dimensions))
+        self.model.append(nn.Sigmoid())
 
     def forward(self, a_tensor, b_tensor):
         a_tensor = self.flatten(a_tensor)

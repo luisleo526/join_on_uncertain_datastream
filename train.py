@@ -27,6 +27,7 @@ def parse_args():
     parser.add_argument('--weight_decay', type=float, default=1e-3)
     parser.add_argument('--device', type=str, default='cuda')
     parser.add_argument('--hidden_size', type=int, default=16)
+    parser.add_argument('--num_layers', type=int, default=4)
     return parser.parse_args()
 
 
@@ -54,7 +55,7 @@ if __name__ == '__main__':
         eval_ds = UncertainObjectDataset(100, dim, [0.2])
         eval_dl = DataLoader(eval_ds, batch_size=batch_size, shuffle=False, collate_fn=collate_fn2, num_workers=8)
 
-        model = IEJModel(dim, 4, args.hidden_size)
+        model = IEJModel(dim, 4, args.hidden_size, args.num_layers)
         model.to(device)
         model.train()
         optim = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=args.weight_decay)
