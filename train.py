@@ -53,8 +53,8 @@ if __name__ == '__main__':
         model = IEJModel(dim, 4)
         model.to(device)
         model.train()
-        optim = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-5)
-        scheduler = torch.optim.lr_scheduler.LambdaLR(optim, lambda x: 0.7 ** (x % args.epochs_per_turn))
+        optim = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=args.weight_decay)
+        scheduler = torch.optim.lr_scheduler.LambdaLR(optim, lambda x: args.gamma ** (x % args.epochs_per_turn))
 
         progress_bar = tqdm(total=num_epochs * (len(train_dl) + len(eval_dl)))
 
