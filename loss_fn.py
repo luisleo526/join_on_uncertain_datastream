@@ -8,6 +8,8 @@ def overlap_prob(w: torch.Tensor, a: torch.Tensor, b: torch.Tensor, epsilon: tor
     b_min, b_max, b_std, b_mean = torch.unbind(b, dim=2)
     delta: torch.Tensor = w * epsilon.unsqueeze(1).expand(batch_size, num_dimension) * 0.5
 
+    assert torch.all(delta >= 0.0), delta
+
     a_max = a_max + delta
     a_min = a_min - delta
     b_max = b_max + delta
@@ -54,7 +56,7 @@ def iej_loss(w: torch.Tensor, a: torch.Tensor, b: torch.Tensor, epsilon: torch.T
     lambda_1 = 1.0
     lambda_2 = 1.0
 
-    #loss = 0.5 * overlapped * (-lambda_1 * (1 + sign) * prob + lambda_2 * (1 - sign) * distance)
+    # loss = 0.5 * overlapped * (-lambda_1 * (1 + sign) * prob + lambda_2 * (1 - sign) * distance)
     loss = 0.5 * overlapped * (-lambda_1 * (1 + sign) + lambda_2 * (1 - sign)) * (prob + distance)
 
     return loss.mean()
