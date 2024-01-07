@@ -16,14 +16,14 @@ logging.basicConfig(level=logging.INFO)
 
 def parse_args():
     parser = ArgumentParser()
-    parser.add_argument('--num_objects', type=int, default=200)
+    parser.add_argument('--num_objects', type=int, default=500)
     parser.add_argument('--epochs_per_turn', type=int, default=10)
-    parser.add_argument('--batch_size', type=int, default=16)
+    parser.add_argument('--batch_size', type=int, default=64)
     parser.add_argument('--num_turns', type=int, default=10)
     parser.add_argument('--dims', type=int, default=[1, 2, 3, 4, 5, 6, 7], nargs='+')
     parser.add_argument('--lr', type=float, default=1e-3)
     parser.add_argument('--gamma', type=float, default=0.9)
-    parser.add_argument('--weight_decay', type=float, default=1e-5)
+    parser.add_argument('--weight_decay', type=float, default=1e-3)
     parser.add_argument('--device', type=str, default='cuda')
     return parser.parse_args()
 
