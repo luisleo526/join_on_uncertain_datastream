@@ -1,7 +1,7 @@
 import torch
 
 
-def iej_loss(w: torch.Tensor, a: torch.Tensor, b: torch.Tensor, epsilon: torch.Tensor, min_distance: torch.Tensor):
+def overlap_prob(w: torch.Tensor, a: torch.Tensor, b: torch.Tensor, epsilon: torch.Tensor, min_distance: torch.Tensor):
     batch_size, num_dimension = w.shape
 
     a_min, a_max, a_std, a_mean = torch.unbind(a, dim=2)
@@ -45,9 +45,16 @@ def iej_loss(w: torch.Tensor, a: torch.Tensor, b: torch.Tensor, epsilon: torch.T
 
     sign = torch.where(epsilon > min_distance, 1, -1)
 
+    return prob, overlapped, distance, sign
+
+
+def iej_loss(w: torch.Tensor, a: torch.Tensor, b: torch.Tensor, epsilon: torch.Tensor, min_distance: torch.Tensor):
+    prob, overlapped, distance, sign = overlap_prob(w, a, b, epsilon, min_distance)
+
     lambda_1 = 1.0
     lambda_2 = 1.0
 
-    loss = 0.5 * overlapped * (-lambda_1 * (1 + sign) * prob + lambda_2 * (1 - sign) * distance)
+    # loss = 0.5 * overlapped * (-lambda_1 * (1 + sign) * prob + lambda_2 * (1 - sign) * distance)
+    loss = 0.5 * overlapped * (-lambda_1 * (1 + sign) + lambda_2 * (1 - sign)) * (prob + distance)
 
     return loss.mean()

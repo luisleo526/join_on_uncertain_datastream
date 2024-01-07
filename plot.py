@@ -82,5 +82,3 @@ if __name__ == '__main__':
         np.save(f'./results/iej_{dim}.npy', iej)
         np.save(f'./results/oiej_{dim}.npy', oiej)
         np.save(f'./results/oiej_dl_{dim}.npy', oiej_dl)
-
-        # calculate precision, recall, f1-score

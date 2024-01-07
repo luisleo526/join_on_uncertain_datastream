@@ -7,7 +7,7 @@ import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from dataset import UncertainObjectDataset, collate_fn
+from dataset import UncertainObjectDataset, collate_fn, collate_fn2
 from loss_fn import iej_loss
 from model import IEJModel
 
@@ -46,18 +46,18 @@ if __name__ == '__main__':
         train_ds = UncertainObjectDataset(num_objects, dim, [0.05 * i for i in range(1, 11)])
         train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True, collate_fn=collate_fn, num_workers=8)
 
-        eval_ds = UncertainObjectDataset(100, dim, [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8])
-        eval_dl = DataLoader(eval_ds, batch_size=batch_size, shuffle=False, collate_fn=collate_fn, num_workers=8)
+        eval_ds = UncertainObjectDataset(100, dim, [0.1 + 0.025 * i for i in range(30)])
+        eval_dl = DataLoader(eval_ds, batch_size=batch_size, shuffle=False, collate_fn=collate_fn2, num_workers=8)
 
         model = IEJModel(dim, 4)
         model.to(device)
         model.train()
         optim = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-5)
-        scheduler = torch.optim.lr_scheduler.ExponentialLR(optim, gamma=0.9)
+        scheduler = torch.optim.lr_scheduler.LambdaLR(optim, lambda x: 0.7 ** (x // 5))
 
         progress_bar = tqdm(total=num_epochs * (len(train_dl) + len(eval_dl)))
 
-        best_loss = np.inf
+        best_acc = -np.inf
         for epoch in range(num_epochs):
 
             if epoch % 5 == 0:
@@ -79,20 +79,23 @@ if __name__ == '__main__':
 
             model.eval()
             with torch.no_grad():
-                acm_loss = 0.0
-                for a, b, epsilon, min_distance in eval_dl:
-                    a, b, epsilon, min_distance = a.to(device), b.to(device), epsilon.to(device), min_distance.to(
-                        device)
-                    w = model(a, b)
-                    loss = iej_loss(w, a, b, epsilon, min_distance)
-                    acm_loss += loss.item()
+                y_pred = []
+                y_true = []
+                for a_tensor, b_tensor, epsilons, a_objects, b_objects in eval_dl:
+                    a_tensor, b_tensor = a_tensor.to(device), b_tensor.to(device)
+                    ws = model(a_tensor, b_tensor).cpu().numpy()
+                    for a, b, epsilon, w in zip(a_objects, b_objects, epsilons, ws):
+                        delta = w * epsilon * 0.5
+                        y_pred.append(int(a.iej(b, epsilon, delta)))
+                        y_true.append(int(a.ej(b, epsilon)))
                     progress_bar.update(1)
+                acc = np.mean(np.array(y_pred) == np.array(y_true))
 
-            logging.info(f'Epoch {epoch + 1} eval loss: {acm_loss / len(eval_dl)}')
+            logging.info(f'Epoch {epoch + 1} eval acc: {acc}')
 
-            if acm_loss < best_loss:
+            if acc < best_acc:
                 # save model
                 torch.save(model.state_dict(), f'./ckpt/iej_{dim}_best.pth')
-                best_loss = acm_loss
+                best_loss = acc
 
             torch.save(model.state_dict(), f'./ckpt/iej_{dim}_last.pth')

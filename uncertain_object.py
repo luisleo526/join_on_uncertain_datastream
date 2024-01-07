@@ -51,7 +51,31 @@ class UncertainObject(object):
         # Compute the distance between each pair of samples
         distances = np.linalg.norm(self.samples[:, None, :] - other.samples[None, :, :], axis=-1)
 
-        return distances[distances < eps].size > beta * distances.size
+        area_a = self.mbr.max - self.mbr.min
+        area_b = other.mbr.max - other.mbr.min
+
+        cond_a_greater = self.mbr.max > other.mbr.max
+        cond_a_smaller = self.mbr.min < other.mbr.min
+
+        # Calculate the areas based on conditions
+        # a.max > b.max
+        area1 = np.where(cond_a_smaller,
+                         other.mbr.max - other.mbr.min,
+                         other.mbr.max - self.mbr.min)
+        area1 = np.maximum(area1, 0.0)
+
+        # a.max < b.max
+        area2 = np.where(cond_a_smaller,
+                         self.mbr.max - other.mbr.min,
+                         self.mbr.max - self.mbr.min)
+        area2 = np.maximum(area2, 0.0)
+
+        # Calculate probabilities based on conditions
+        prob = np.where(cond_a_greater,
+                        np.where(cond_a_smaller, area1 / area_a, area1 ** 2 / (area_a * area_b)),
+                        np.where(cond_a_smaller, area2 ** 2 / (area_a * area_b), area2 / area_b))
+
+        return distances[distances < eps].size > beta * distances.size or np.prod(prob) > beta
 
     def _check_overlapping(self, other, delta: np.ndarray, beta: float = 0.0) -> bool:
         """
