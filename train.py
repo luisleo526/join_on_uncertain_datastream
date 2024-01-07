@@ -48,7 +48,8 @@ if __name__ == '__main__':
         train_ds = UncertainObjectDataset(num_objects, dim, [0.1 + 0.025 * i for i in range(30)])
         train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True, collate_fn=collate_fn, num_workers=8)
 
-        eval_ds = UncertainObjectDataset(100, dim, [0.1 + 0.025 * i for i in range(30)])
+        #eval_ds = UncertainObjectDataset(100, dim, [0.1 + 0.025 * i for i in range(30)])
+        eval_ds = UncertainObjectDataset(100, dim, [0.2])
         eval_dl = DataLoader(eval_ds, batch_size=batch_size, shuffle=False, collate_fn=collate_fn2, num_workers=8)
 
         model = IEJModel(dim, 4)
