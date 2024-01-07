@@ -58,7 +58,8 @@ if __name__ == '__main__':
         model = IEJModel(dim, 4, args.hidden_size, args.num_layers)
         model.to(device)
         model.train()
-        optim = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+
+        optim = torch.optim.SGD(model.parameters(), lr=args.lr, weight_decay=args.weight_decay, momentum=0.9)
         scheduler = torch.optim.lr_scheduler.LambdaLR(optim, lambda x: args.gamma ** (x % args.epochs_per_turn))
 
         progress_bar = tqdm(total=num_epochs * (len(train_dl) + len(eval_dl)))
