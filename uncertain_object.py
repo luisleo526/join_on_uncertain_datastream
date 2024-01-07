@@ -85,6 +85,8 @@ class UncertainObject(object):
         :return: Boolean
         """
 
+        assert np.all(delta >= 0.0), f'Delta must be greater than or equal to 0.0, but got {delta}'
+
         area_self = self.mbr.max - self.mbr.min + 2.0 * delta
         area_other = other.mbr.max - other.mbr.min + 2.0 * delta
 
