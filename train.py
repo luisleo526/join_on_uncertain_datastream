@@ -16,9 +16,10 @@ logging.basicConfig(level=logging.INFO)
 
 def parse_args():
     parser = ArgumentParser()
-    parser.add_argument('--num_objects', type=int, default=500)
-    parser.add_argument('--num_epochs', type=int, default=60)
+    parser.add_argument('--num_objects', type=int, default=200)
+    parser.add_argument('--epochs_per_turn', type=int, default=10)
     parser.add_argument('--batch_size', type=int, default=16)
+    parser.add_argument('--num_turns', type=int, default=10)
     parser.add_argument('--dims', type=int, default=[1, 2, 3, 4, 5, 6, 7], nargs='+')
     parser.add_argument('--lr', type=float, default=1e-3)
     parser.add_argument('--gamma', type=float, default=0.9)
@@ -32,7 +33,7 @@ if __name__ == '__main__':
     args = parse_args()
 
     num_objects = args.num_objects
-    num_epochs = args.num_epochs
+    num_epochs = args.epochs_per_turn * args.num_turns
     batch_size = args.batch_size
 
     device = torch.device(args.device)
@@ -53,14 +54,14 @@ if __name__ == '__main__':
         model.to(device)
         model.train()
         optim = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-5)
-        scheduler = torch.optim.lr_scheduler.LambdaLR(optim, lambda x: 0.7 ** (x // 5))
+        scheduler = torch.optim.lr_scheduler.LambdaLR(optim, lambda x: 0.7 ** (x // args.epochs_per_turn))
 
         progress_bar = tqdm(total=num_epochs * (len(train_dl) + len(eval_dl)))
 
         best_acc = -np.inf
         for epoch in range(num_epochs):
 
-            if epoch % 5 == 0:
+            if epoch % args.epochs_per_turn == 0:
                 train_ds = UncertainObjectDataset(num_objects, dim, [0.05 * i for i in range(1, 11)])
                 train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True, collate_fn=collate_fn,
                                       num_workers=8)
@@ -93,7 +94,7 @@ if __name__ == '__main__':
 
             logging.info(f'Epoch {epoch + 1} eval acc: {acc}')
 
-            if acc < best_acc:
+            if acc > best_acc:
                 # save model
                 torch.save(model.state_dict(), f'./ckpt/iej_{dim}_best.pth')
                 best_loss = acc
