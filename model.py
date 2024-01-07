@@ -82,6 +82,6 @@ class IEJModel(nn.Module):
 
         x = torch.cat([self.encoder(a, b) for a, b in zip(a_slices, b_slices)], dim=1)
         x = self.decoder(x)
-        x = F.normalize(x, dim=0, p=2)
+        x = F.normalize(x, dim=1, p=2)
 
         return x
