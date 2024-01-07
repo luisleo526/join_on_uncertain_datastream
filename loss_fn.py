@@ -4,11 +4,12 @@ import torch
 def overlap_prob(w: torch.Tensor, a: torch.Tensor, b: torch.Tensor, epsilon: torch.Tensor, min_distance: torch.Tensor):
     batch_size, num_dimension = w.shape
 
+    assert torch.all(w >= 0.0), w
+    assert torch.all(epsilon >= 0.0), epsilon
+
     a_min, a_max, a_std, a_mean = torch.unbind(a, dim=2)
     b_min, b_max, b_std, b_mean = torch.unbind(b, dim=2)
     delta: torch.Tensor = w * epsilon.unsqueeze(1).expand(batch_size, num_dimension) * 0.5
-
-    assert torch.all(delta >= 0.0), delta
 
     a_max = a_max + delta
     a_min = a_min - delta
