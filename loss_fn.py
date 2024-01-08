@@ -57,7 +57,7 @@ def iej_loss(w: torch.Tensor, a: torch.Tensor, b: torch.Tensor, epsilon: torch.T
     lambda_1 = 1.0
     lambda_2 = 1.0
 
-    # loss = 0.5 * overlapped * (-lambda_1 * (1 + sign) * prob + lambda_2 * (1 - sign) * distance)
-    loss = 0.5 * overlapped * (-lambda_1 * (1 + sign) + lambda_2 * (1 - sign)) * (prob + distance)
+    loss = 0.5 * overlapped * (-lambda_1 * (1 + sign) * prob + lambda_2 * (1 - sign) * distance)
+    # loss = 0.5 * overlapped * (-lambda_1 * (1 + sign) + lambda_2 * (1 - sign)) * (prob + distance)
 
     return loss.mean()
