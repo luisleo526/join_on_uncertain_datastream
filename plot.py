@@ -32,7 +32,7 @@ def parse_args():
     parser = ArgumentParser()
     parser.add_argument('--num_objects', type=int, default=500)
     parser.add_argument('--num_turns', type=int, default=3)
-    parser.add_argument('--dims', type=int, default=[1, 2, 3, 4, 5, 6, 7], nargs='+')
+    parser.add_argument('--dims', type=int, default=[2, 3, 4, 5, 6, 7, 8, 9, 10], nargs='+')
     parser.add_argument('--hidden_size', type=int, default=16)
     parser.add_argument('--num_layers', type=int, default=4)
     return parser.parse_args()
