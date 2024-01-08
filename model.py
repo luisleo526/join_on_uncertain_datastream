@@ -59,22 +59,21 @@ class MBREncoder(nn.Module):
 
 
 class IEJModel(nn.Module):
-    def __init__(self, num_dimensions, num_features=4, hidden_size=16):
+    def __init__(self, num_dimensions, num_features=4, hidden_size=16, num_layers=2):
         super(IEJModel, self).__init__()
         self.encoder = MBREncoder(num_features, hidden_size)
         self.decoder = nn.Sequential(
             nn.Linear(num_dimensions * num_features, hidden_size),
             nn.ReLU(),
-            nn.InstanceNorm1d(hidden_size),
-            nn.Linear(hidden_size, hidden_size),
-            nn.ReLU(),
-            nn.InstanceNorm1d(hidden_size),
-            nn.Linear(hidden_size, hidden_size),
-            nn.ReLU(),
-            nn.InstanceNorm1d(hidden_size),
-            nn.Linear(hidden_size, num_dimensions),
-            nn.Sigmoid(),
+            nn.InstanceNorm1d(hidden_size)
         )
+        for _ in range(num_layers):
+            self.decoder.append(nn.Linear(hidden_size, hidden_size))
+            self.decoder.append(nn.ReLU())
+            self.decoder.append(nn.InstanceNorm1d(hidden_size))
+
+        self.decoder.append(nn.Linear(hidden_size, num_dimensions))
+        self.decoder.append(nn.Sigmoid())
 
     def forward(self, a_tensor, b_tensor):
         # Input: (batch_size, num_dimensions, num_features)
