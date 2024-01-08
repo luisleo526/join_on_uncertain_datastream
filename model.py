@@ -12,10 +12,10 @@ class BilBlock(nn.Module):
 
         self.mlp = nn.Sequential(
             nn.Tanh(),
-            nn.InstanceNorm1d(hidden_size),
+            nn.BatchNorm1d(hidden_size),
             nn.Linear(hidden_size, num_features),
             nn.Tanh(),
-            nn.InstanceNorm1d(num_features),
+            nn.BatchNorm1d(num_features),
         )
 
     def forward(self, a_tensor, b_tensor):
@@ -33,19 +33,19 @@ class MBREncoder(nn.Module):
         self.single_net = nn.Sequential(
             nn.Linear(num_features, hidden_size),
             nn.Tanh(),
-            nn.InstanceNorm1d(hidden_size),
+            nn.BatchNorm1d(hidden_size),
             nn.Linear(hidden_size, num_features),
             nn.Tanh(),
-            nn.InstanceNorm1d(num_features),
+            nn.BatchNorm1d(num_features),
         )
 
         self.concat_net = nn.Sequential(
             nn.Linear(num_features * 3, num_features * 3),
             nn.Tanh(),
-            nn.InstanceNorm1d(num_features * 3),
+            nn.BatchNorm1d(num_features * 3),
             nn.Linear(num_features * 3, num_features),
             nn.Tanh(),
-            nn.InstanceNorm1d(num_features),
+            nn.BatchNorm1d(num_features),
         )
 
     def forward(self, a_tensor, b_tensor):
@@ -65,12 +65,12 @@ class IEJModel(nn.Module):
         self.decoder = nn.Sequential(
             nn.Linear(num_dimensions * num_features, hidden_size),
             nn.ReLU(),
-            nn.InstanceNorm1d(hidden_size)
+            nn.BatchNorm1d(hidden_size)
         )
         for _ in range(num_layers):
             self.decoder.append(nn.Linear(hidden_size, hidden_size))
             self.decoder.append(nn.ReLU())
-            self.decoder.append(nn.InstanceNorm1d(hidden_size))
+            self.decoder.append(nn.BatchNorm1d(hidden_size))
 
         self.decoder.append(nn.Linear(hidden_size, num_dimensions))
         self.decoder.append(nn.Sigmoid())
