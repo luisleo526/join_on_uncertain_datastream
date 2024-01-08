@@ -9,8 +9,10 @@ from tqdm import tqdm
 
 from dataset import UncertainObjectDataset, collate_fn, collate_fn2
 from loss_fn import iej_loss
-# from model import IEJModel
-from model import SimpleIEJ as IEJModel
+from model import IEJModel
+from utils import init_weights
+
+# from model import SimpleIEJ as IEJModel
 
 logging.basicConfig(level=logging.INFO)
 
@@ -55,6 +57,8 @@ if __name__ == '__main__':
         eval_dl = DataLoader(eval_ds, batch_size=batch_size, shuffle=False, collate_fn=collate_fn2, num_workers=8)
 
         model = IEJModel(dim, 4, args.hidden_size, args.num_layers)
+        model.apply(init_weights)
+
         model.to(device)
         model.train()
 

@@ -4,6 +4,7 @@ from typing import List, Tuple, Optional
 
 import numpy as np
 import numpy.random as npr
+import torch.nn as nn
 
 from uncertain_object import UncertainObject
 
@@ -95,3 +96,16 @@ def timing(f):
         return result
 
     return wrap
+
+
+def init_weights(m):
+    if isinstance(m, nn.Linear):
+        nn.init.xavier_uniform_(m.weight)
+        if m.bias is not None:
+            nn.init.constant_(m.bias, 0)
+    elif isinstance(m, nn.Bilinear):
+        nn.init.xavier_uniform_(m.weight)
+        nn.init.constant_(m.bias, 0)
+    elif isinstance(m, nn.BatchNorm1d) or isinstance(m, nn.InstanceNorm1d):
+        nn.init.constant_(m.weight, 1)
+        nn.init.constant_(m.bias, 0)
