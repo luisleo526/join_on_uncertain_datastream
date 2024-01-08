@@ -2,8 +2,12 @@ import logging
 from argparse import ArgumentParser
 from datetime import datetime
 
+import torch
+
+from model import IEJModel
 from utils import generate_time_streams
 
+# from model import SimpleIEJ as IEJModel
 time_string = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
 logger = logging.getLogger(__name__)
@@ -28,6 +32,7 @@ def parse_args():
     parser.add_argument('--num_layers', type=int, default=4)
     parser.add_argument('--ckpt_type', choices=['best', 'last'], default='last')
     parser.add_argument('--cmt', type=str, default='precision')
+    parser.add_argument('--windows_size', type=int, default=30)
     return parser.parse_args()
 
 
@@ -37,3 +42,8 @@ if __name__ == '__main__':
 
     for dim in args.dims:
         streams = generate_time_streams(args.num_objects, dim, args.num_streams)
+        model = IEJModel(dim, 4, args.hidden_size, args.num_layers)
+        model.load_state_dict(torch.load(f'./ckpt/iej_{dim}_{args.ckpt_type}.pth', map_location='cpu'))
+        model.eval()
+
+
