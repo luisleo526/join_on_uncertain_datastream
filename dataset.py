@@ -10,11 +10,9 @@ from utils import generate_objects
 
 
 class UncertainObjectDataset(Dataset):
-    def __init__(self, num_objects: int, dim: int, threshold_choices: List[float]):
-        self.objects, self.distance_matrix = generate_objects(num_objects, dim, None)
+    def __init__(self, num_objects: int, dim: int):
+        self.objects = generate_objects(num_objects, dim)
         self.epsilons = []
-        for threshold in threshold_choices:
-            self.epsilons.append(np.quantile(self.distance_matrix.flatten(), threshold))
         self.num_objects = num_objects
         self.indices = list(combinations(range(num_objects), 2))
 
@@ -23,7 +21,7 @@ class UncertainObjectDataset(Dataset):
 
     def __getitem__(self, idx):
         i, j = self.indices[idx]
-        return self.objects[i], self.objects[j], random.choice(self.epsilons)
+        return self.objects[i], self.objects[j]
 
 
 def collate_fn(batch):
@@ -31,12 +29,7 @@ def collate_fn(batch):
     b_tensor = []
     epsilons = []
     min_distances = []
-    for a, b, epsilon in batch:
-        a_tensor.append(a.mbr_tensor)
-        b_tensor.append(b.mbr_tensor)
-        epsilons.append(a % b)
-        min_distances.append(a % b)
-
+    for a, b in batch:
         a_tensor.append(a.mbr_tensor)
         b_tensor.append(b.mbr_tensor)
         epsilons.append((a % b) * 0.95)
@@ -47,7 +40,7 @@ def collate_fn(batch):
         epsilons.append((a % b) * 1.05)
         min_distances.append(a % b)
 
-    return torch.stack(a_tensor), torch.stack(b_tensor), torch.tensor(epsilons), torch.tensor(min_distances)
+    return torch.stack(a_tensor), torch.stack(b_tensor), torch.tensor(min_distances)
 
 
 def collate_fn2(batch):
@@ -57,13 +50,7 @@ def collate_fn2(batch):
     epsilons = []
     a_objects = []
     b_objects = []
-    for a, b, epsilon in batch:
-        a_tensor.append(a.mbr_tensor)
-        b_tensor.append(b.mbr_tensor)
-        epsilons.append(a % b)
-        a_objects.append(a)
-        b_objects.append(b)
-
+    for a, b in batch:
         a_tensor.append(a.mbr_tensor)
         b_tensor.append(b.mbr_tensor)
         epsilons.append((a % b) * 0.95)

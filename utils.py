@@ -10,13 +10,31 @@ from uncertain_object import UncertainObject
 GENERATOR_TYPE = List[Tuple[int, float, float]]
 
 
-def generate_objects(num_objects, dim, threshold=None):
+def time_series(t, d):
+    phase = 2 * np.pi / 18 * d
+    mean = np.sin(t + phase)
+    mean += 0.25 * np.sin(2 * t + phase) * np.cos(3 * t - phase)
+    mean += 0.125 * np.sin(5 * t + phase) * np.cos(7 * t - phase)
+    mean += 0.0625 * np.sin(11 * t + phase) * np.cos(13 * t - phase)
+    return mean * 10
+
+
+def generate_time_streams(num_objects, dim):
     objects = []
-    means = np.random.uniform(-10, 10, (num_objects, dim))
-    stds = np.random.uniform(1, 10, (num_objects, dim))
-    epsilon = np.linalg.norm(means[:, None, :] - means[None, :, :], axis=-1)
-    if threshold is not None:
-        epsilon = np.quantile(epsilon.flatten(), threshold)
+    t = np.random.uniform(0, 4 * np.pi, num_objects)
+    t = np.sort(t)
+    means = np.stack([time_series(t, d) for d in range(dim)]).T
+    stds = np.random.uniform(1, 3, (num_objects, dim))
+
+    return generate_objects(num_objects, dim, means, stds)
+
+
+def generate_objects(num_objects, dim, means=None, stds=None):
+    objects = []
+    if means is None:
+        means = np.random.uniform(-10, 10, (num_objects, dim))
+    if stds is None:
+        stds = np.random.uniform(1, 5, (num_objects, dim))
 
     for i in range(num_objects):
         mean = means[i]
@@ -36,7 +54,7 @@ def generate_objects(num_objects, dim, threshold=None):
 
         objects.append(UncertainObject(generator(num_samples, tri, gau, uni)))
 
-    return objects, epsilon
+    return objects
 
 
 def generator(num_samples: int,

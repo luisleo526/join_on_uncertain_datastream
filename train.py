@@ -21,7 +21,7 @@ def parse_args():
     parser.add_argument('--epochs_per_turn', type=int, default=10)
     parser.add_argument('--batch_size', type=int, default=64)
     parser.add_argument('--num_turns', type=int, default=10)
-    parser.add_argument('--dims', type=int, default=[1, 2, 3, 4, 5, 6, 7], nargs='+')
+    parser.add_argument('--dims', type=int, default=[2, 3, 4, 5, 6, 7, 8, 9, 10], nargs='+')
     parser.add_argument('--lr', type=float, default=1e-3)
     parser.add_argument('--gamma', type=float, default=0.9)
     parser.add_argument('--weight_decay', type=float, default=1e-3)
@@ -48,11 +48,10 @@ if __name__ == '__main__':
         # dim = int(2 ** _dim)
         dim = _dim
 
-        train_ds = UncertainObjectDataset(num_objects, dim, [0.1 + 0.025 * i for i in range(30)])
+        train_ds = UncertainObjectDataset(num_objects, dim)
         train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True, collate_fn=collate_fn, num_workers=8)
 
-        # eval_ds = UncertainObjectDataset(100, dim, [0.1 + 0.025 * i for i in range(30)])
-        eval_ds = UncertainObjectDataset(100, dim, [0.2])
+        eval_ds = UncertainObjectDataset(100, dim)
         eval_dl = DataLoader(eval_ds, batch_size=batch_size, shuffle=False, collate_fn=collate_fn2, num_workers=8)
 
         model = IEJModel(dim, 4, args.hidden_size, args.num_layers)
@@ -68,7 +67,7 @@ if __name__ == '__main__':
         for epoch in range(num_epochs):
 
             if epoch % args.epochs_per_turn == 0:
-                train_ds = UncertainObjectDataset(num_objects, dim, [0.1 + 0.025 * i for i in range(30)])
+                train_ds = UncertainObjectDataset(num_objects, dim)
                 train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True, collate_fn=collate_fn,
                                       num_workers=8)
 
