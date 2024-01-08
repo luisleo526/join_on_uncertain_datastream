@@ -44,20 +44,24 @@ def overlap_prob(w: torch.Tensor, a: torch.Tensor, b: torch.Tensor, epsilon: tor
     area2 = torch.where(cond_a_smaller, a_max - b_min, a_max - a_min)
 
     distance = torch.where(cond_a_greater, area1, area2)
+
+    area = torch.prod(distance, dim=1)
+    area = torch.abs(area)
+
     distance = torch.sqrt(torch.sum(torch.square(distance), dim=1))
 
     sign = torch.where(epsilon > min_distance, 1, -1)
 
-    return prob, overlapped, distance, sign
+    return overlapped, sign, area, distance
 
 
 def iej_loss(w: torch.Tensor, a: torch.Tensor, b: torch.Tensor, epsilon: torch.Tensor, min_distance: torch.Tensor):
-    prob, overlapped, distance, sign = overlap_prob(w, a, b, epsilon, min_distance)
+    overlapped, sign, area, distance = overlap_prob(w, a, b, epsilon, min_distance)
 
     lambda_1 = 1.0
     lambda_2 = 1.0
 
-    loss = 0.5 * overlapped * (-lambda_1 * (1 + sign) * prob + lambda_2 * (1 - sign) * distance)
-    # loss = 0.5 * overlapped * (-lambda_1 * (1 + sign) + lambda_2 * (1 - sign)) * (prob + distance)
+    # loss = 0.5 * overlapped * (-lambda_1 * (1 + sign) * area + lambda_2 * (1 - sign) * distance)
+    loss = 0.5 * overlapped * (-lambda_1 * (1 + sign) + lambda_2 * (1 - sign)) * (area + distance)
 
     return loss.mean()
