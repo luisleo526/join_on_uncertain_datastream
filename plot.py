@@ -1,4 +1,5 @@
 import logging
+from argparse import ArgumentParser
 from datetime import datetime
 from pathlib import Path
 
@@ -8,7 +9,8 @@ from sklearn.metrics import classification_report
 from tqdm import tqdm
 
 from dataset import UncertainObjectDataset
-from model import IEJModel
+# from model import IEJModel
+from model import SimpleIEJ as IEJModel
 from utils import generate_objects
 
 time_string = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
@@ -25,25 +27,32 @@ logger.addHandler(fh)
 logger.addHandler(ch)
 logger.setLevel(logging.INFO)
 
+
+def parse_args():
+    parser = ArgumentParser()
+    parser.add_argument('--num_objects', type=int, default=500)
+    parser.add_argument('--num_turns', type=int, default=3)
+    parser.add_argument('--dims', type=int, default=[1, 2, 3, 4, 5, 6, 7], nargs='+')
+    parser.add_argument('--hidden_size', type=int, default=16)
+    parser.add_argument('--num_layers', type=int, default=4)
+    return parser.parse_args()
+
+
 if __name__ == '__main__':
 
-    num_objects = int(input('Number of objects: '))
-    num_turns = int(input('Number of turns: '))
+    args = parse_args()
 
-    total_tests = int(num_objects * (num_objects - 1) / 2)
-    dims = np.array(list(range(1, 9)), dtype=int)
-    dims = np.power(2, dims)
+    num_objects = args.num_objects
+    num_turns = args.num_turns
 
     Path('./results').mkdir(parents=True, exist_ok=True)
 
-    for dim_idx in range(dims.size):
-
-        dim = dims[dim_idx]
+    for dim in args.dims:
 
         objects, _ = generate_objects(num_objects, dim, None)
         eval_ds = UncertainObjectDataset(num_objects, dim, [0.1 + 0.025 * i for i in range(30)])
 
-        model = IEJModel(dim, 4)
+        model = IEJModel(dim, 4, args.hidden_size, args.num_layers)
         model.load_state_dict(torch.load(f'./ckpt/iej_{dim}_best.pth'))
         model.eval()
 
