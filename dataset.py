@@ -1,8 +1,5 @@
-import random
 from itertools import combinations
-from typing import List
 
-import numpy as np
 import torch
 from torch.utils.data import Dataset
 
@@ -40,7 +37,7 @@ def collate_fn(batch):
         epsilons.append((a % b) * 1.05)
         min_distances.append(a % b)
 
-    return torch.stack(a_tensor), torch.stack(b_tensor), torch.tensor(min_distances)
+    return torch.stack(a_tensor), torch.stack(b_tensor), torch.tensor(epsilons), torch.tensor(min_distances)
 
 
 def collate_fn2(batch):

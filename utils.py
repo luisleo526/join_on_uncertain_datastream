@@ -19,14 +19,13 @@ def time_series(t, d):
     return mean * 10
 
 
-def generate_time_streams(num_objects, dim):
-    objects = []
+def generate_time_streams(num_objects, dim, num_streams=1):
     t = np.random.uniform(0, 4 * np.pi, num_objects)
     t = np.sort(t)
     means = np.stack([time_series(t, d) for d in range(dim)]).T
     stds = np.random.uniform(1, 3, (num_objects, dim))
 
-    return generate_objects(num_objects, dim, means, stds)
+    return [generate_objects(num_objects, dim, means, stds) for _ in range(num_streams)]
 
 
 def generate_objects(num_objects, dim, means=None, stds=None):
@@ -35,6 +34,9 @@ def generate_objects(num_objects, dim, means=None, stds=None):
         means = np.random.uniform(-10, 10, (num_objects, dim))
     if stds is None:
         stds = np.random.uniform(1, 5, (num_objects, dim))
+
+    assert means.shape == (num_objects, dim)
+    assert stds.shape == (num_objects, dim)
 
     for i in range(num_objects):
         mean = means[i]
