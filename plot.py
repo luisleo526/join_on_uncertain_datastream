@@ -120,4 +120,4 @@ if __name__ == '__main__':
     plt.xscale('log', base=2)
     plt.legend()
 
-    plt.savefig(f'./results/{args.cmt}.png')
+    plt.savefig(f'./results/{args.cmt}_{args.ckpt_type}.png')
