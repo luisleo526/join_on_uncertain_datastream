@@ -35,6 +35,7 @@ def parse_args():
     parser.add_argument('--dims', type=int, default=[2, 3, 4, 5, 6, 7, 8, 9, 10], nargs='+')
     parser.add_argument('--hidden_size', type=int, default=16)
     parser.add_argument('--num_layers', type=int, default=4)
+    parser.add_argument('--ckpt_type', choices=['best', 'last'], default='best')
     return parser.parse_args()
 
 
@@ -53,7 +54,7 @@ if __name__ == '__main__':
         eval_ds = UncertainObjectDataset(num_objects, dim, [0.1 + 0.025 * i for i in range(30)])
 
         model = IEJModel(dim, 4, args.hidden_size, args.num_layers)
-        model.load_state_dict(torch.load(f'./ckpt/iej_{dim}_best.pth'))
+        model.load_state_dict(torch.load(f'./ckpt/iej_{dim}_{args.ckpt_type}.pth'))
         model.eval()
 
         ej = [0, 1]
