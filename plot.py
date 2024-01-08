@@ -51,7 +51,7 @@ if __name__ == '__main__':
     for dim in args.dims:
 
         objects, _ = generate_objects(num_objects, dim, None)
-        eval_ds = UncertainObjectDataset(num_objects, dim, [0.1 + 0.025 * i for i in range(30)])
+        eval_ds = UncertainObjectDataset(num_objects, dim, [0.1])
 
         model = IEJModel(dim, 4, args.hidden_size, args.num_layers)
         model.load_state_dict(torch.load(f'./ckpt/iej_{dim}_{args.ckpt_type}.pth'))
@@ -65,8 +65,9 @@ if __name__ == '__main__':
         with torch.no_grad():
             for turn in range(num_turns):
                 for idx in tqdm(range(len(eval_ds)), desc=f'Dim {dim} Turn {turn}'):
-                    a, b, epsilon = eval_ds[idx]
+                    a, b, _ = eval_ds[idx]
                     w = model(a.mbr_tensor.unsqueeze(0), b.mbr_tensor.unsqueeze(0)).numpy()[0]
+                    epsilon = (a % b) * 0.95 if idx % 2 == 0 else (a % b) * 1.05
                     delta = w * 0.5 * epsilon
 
                     ej.append(int(a.ej(b, epsilon)))
