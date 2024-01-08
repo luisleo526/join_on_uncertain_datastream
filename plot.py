@@ -37,6 +37,7 @@ def parse_args():
     parser.add_argument('--hidden_size', type=int, default=16)
     parser.add_argument('--num_layers', type=int, default=4)
     parser.add_argument('--ckpt_type', choices=['best', 'last'], default='best')
+    parser.add_argument('--cmt', type=str, default='precision')
     return parser.parse_args()
 
 
@@ -119,4 +120,4 @@ if __name__ == '__main__':
     plt.xscale('log', base=2)
     plt.legend()
 
-    plt.savefig(f'./results/{time_string}_precision.png')
+    plt.savefig(f'./results/{args.cmt}.png')
