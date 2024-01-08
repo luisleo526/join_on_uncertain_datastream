@@ -1,8 +1,9 @@
 import logging
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 from datetime import datetime
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from sklearn.metrics import classification_report
@@ -47,6 +48,8 @@ if __name__ == '__main__':
     num_turns = args.num_turns
 
     Path('./results').mkdir(parents=True, exist_ok=True)
+
+    results = Namespace(ej=[], iej=[], oiej=[], oiej_dl=[])
 
     for dim in args.dims:
 
@@ -93,3 +96,27 @@ if __name__ == '__main__':
         np.save(f'./results/iej_{dim}.npy', iej)
         np.save(f'./results/oiej_{dim}.npy', oiej)
         np.save(f'./results/oiej_dl_{dim}.npy', oiej_dl)
+
+        # Save results
+        ej = classification_report(ej, iej, output_dict=True)
+        iej = classification_report(ej, iej, output_dict=True)
+        oiej = classification_report(ej, oiej, output_dict=True)
+        oiej_dl = classification_report(ej, oiej_dl, output_dict=True)
+
+        results.ej.append(ej['1']['precision'])
+        results.iej.append(iej['1']['precision'])
+        results.oiej.append(oiej['1']['precision'])
+        results.oiej_dl.append(oiej_dl['1']['precision'])
+
+    # plot results with markers, log (base=2) scale on x asis
+    plt.figure(figsize=(8, 6))
+    plt.plot(args.dims, results.ej, marker='o', label='EJ')
+    plt.plot(args.dims, results.iej, marker='o', label='IEJ')
+    plt.plot(args.dims, results.oiej, marker='o', label='O_IEJ')
+    plt.plot(args.dims, results.oiej_dl, marker='o', label='O_IEJ (DL)')
+    plt.xlabel('Dimension')
+    plt.ylabel('Precision')
+    plt.xscale('log', base=2)
+    plt.legend()
+
+    plt.savefig(f'./results/{time_string}_precision.png')
