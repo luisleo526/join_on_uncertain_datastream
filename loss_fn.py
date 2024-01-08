@@ -51,6 +51,7 @@ def overlap_prob(w: torch.Tensor, a: torch.Tensor, b: torch.Tensor, epsilon: tor
     distance = torch.sqrt(torch.sum(torch.square(distance), dim=1))
 
     sign = torch.where(epsilon > min_distance, 1, -1)
+    sign = torch.where(overlapped > 0, 1, sign)
 
     return overlapped, sign, area, distance
 
